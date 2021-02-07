@@ -37,7 +37,7 @@ class useful_stuff:
 class player:
     health = 20
     max_health = 20
-    storage = ["fly agaric","belladonna berries","fly agaric"]
+    storage = []
     basket = []
     basketsize = 8
     disks = 5
