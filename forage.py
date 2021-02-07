@@ -10,6 +10,7 @@ import sys
 import random
 import os
 import traceback
+import pickle
 from collections import Counter
 
 class color: 
@@ -34,37 +35,38 @@ class useful_stuff:
         return True
 
 class cat:
-   debug_testing = False
-   name = ""
-   hunger = 2 #min 0 (not hungry), max 10 (very hungry)
-   affection = 5 #min 0 max 10
+   def __init__(self,name,hunger,affection):
+      self.debug_testing = False
+      self.name = ""
+      self.hunger = 2 #min 0 (not hungry), max 10 (very hungry)
+      self.affection = 5 #min 0 max 10
    def disp_stats(self):
       print("Hunger: " + str(self.hunger) + "/10" + " " + "Affection: " + str(self.affection) + "/10")
-   def reset():
-      cat().name = ""
-      cat().hunger = 2
-      cat().affection = 5
+   def reset(self):
+      self.name = ""
+      self.hunger = 2
+      self.affection = 5
 
-C = cat()    
-class player:
-    health = 20
-    max_health = 20
-    storage = []
-    basket = []
-    basketsize = 8
-    disks = 10
-    day = 1
-    time = 420 #420 mins = 7 AM, 1320 mins = 12 AM
-    reputation = 5 #min 0 max 10
-    danger = 0
-    townsfolk_helped = 0
-    cansleep = False
-    passed_out = False
-    hascat = False
-    def disp_stats():
+class Player:
+    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,townsfolk_helped,cansleep,hascat):
+       self.health = 20
+       self.max_health = 20
+       self.storage = []
+       self.basket = []
+       self.basketsize = 8
+       self.disks = 10
+       self.day = 1
+       self.time = 420 #420 mins = 7 AM, 1320 mins = 12 AM
+       self.reputation = 5 #min 0 max 10
+       self.danger = 0
+       self.townsfolk_helped = 0
+       self.cansleep = False
+       self.passed_out = False
+       self.hascat = False
+    def disp_stats(self):
        hhmm = '{:02d}:{:02d}'.format(*divmod(player.time, 60))
        print("Health: " + str(player.health) + "/20"," Disks: " + str(player.disks)," Day: " + str(player.day)," Time: " + str(hhmm))
-    def disp_storage():
+    def disp_storage(self):
        raritycolor = ""
        for letter in Counter(player.storage):
           if letter in items.uncommon_tree_items or letter in items.uncommon_path_items or letter in items.uncommon_creek_items:
@@ -78,7 +80,7 @@ class player:
           print(raritycolor + letter+color.END + ":",Counter(player.storage)[letter])
        #print(type(Counter(player.storage)))
        #print(*player.storage, sep = "\n")
-    def disp_basket():
+    def disp_basket(self):
        for letter in Counter(player.basket):
           raritycolor = ""
           if letter in items.uncommon_tree_items or letter in items.uncommon_path_items or letter in items.uncommon_creek_items:
@@ -90,7 +92,7 @@ class player:
           else:
              raritycolor = color.DARKCYAN
           print(raritycolor + letter+ color.END + ":",Counter(player.basket)[letter])
-    def inc_time(mins):
+    def inc_time(self,mins):
        if player.hascat == True:
           rand_deplete_stats = random.randint(0,75)
           if rand_deplete_stats <= 25:
@@ -98,11 +100,8 @@ class player:
           elif rand_deplete_stats > 25 and rand_deplete_stats <= 60:
              if C.hunger < 10:
                 C.hunger = C.hunger + 1
-          else:
-             if C.hunger < 10:
-                C.hunger = C.hunger + 2
              if C.affection > 0:
-                C.affection = C.affection - 2
+                C.affection = C.affection -1
           if C.hunger >= 7 or C.affection <= 3:
              print(color.RED + "MEOWWWW..." + color.END)
              print(color.RED + "Oh no! Did you forget to take care of your cat?" + color.END)
@@ -112,7 +111,7 @@ class player:
              print(color.RED + "Oh no.. you must've forgot to take care of your cat." + color.END)
              print(color.RED + "Looks like they've gone off looking for a better home." + color.END)
              player.hascat = False
-             cat.reset()
+             C.reset()
        player.time = player.time + mins
        if player.time >= 840:
           player.cansleep = True
@@ -132,7 +131,7 @@ class player:
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           player.passed_out = True
           next_day()
-    def item_info():
+    def item_info(self):
        rarity = ""
        itemtype = ""
        print("Type the name of the item you would like to know more about.")
@@ -164,7 +163,7 @@ class player:
           player.item_info()
        else:
           player.arrange_storage()
-    def arrange_storage():
+    def arrange_storage(self):
        os.system("cls")
        choice = False
        moveditem = ""
@@ -216,8 +215,20 @@ class player:
                    print("Not a valid item.")
                    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                 else:
-                   player.storage.remove(moveditem)
-                   player.basket.append(moveditem)
+                   if player.storage.count(moveditem) > 1:
+                      print("How many do you want to move?")
+                      numitems = int(input(">>> "))
+                      if numitems > player.storage.count(moveditem) or numitems < 1:
+                         print("You can't do that.")
+                      elif numitems <= player.storage.count(moveditem):
+                         for i in range(numitems):
+                            player.storage.remove(moveditem)
+                            player.basket.append(moveditem)
+                      else:
+                         print("You can't do that.")
+                   else:
+                      player.storage.remove(moveditem)
+                      player.basket.append(moveditem)
                 player.arrange_storage()
           elif option == "3" or option == "toss storage item":
              player.disp_storage()
@@ -228,8 +239,19 @@ class player:
                 pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                 player.arrange_storage()
              else:
-                player.storage.remove(moveditem)
-                arrange_storage()
+                if player.storage.count(moveditem) > 1:
+                      print("How many do you want to toss?")
+                      numitems = int(input(">>> "))
+                      if numitems > player.storage.count(moveditem) or numitems < 1:
+                         print("You can't do that.")
+                      elif numitems <= player.storage.count(moveditem):
+                         for i in range(numitems):
+                            player.storage.remove(moveditem)
+                      else:
+                         print("You can't do that.")
+                else:
+                   player.storage.remove(moveditem)
+                player.arrange_storage()
           elif option == "4" or option == "toss basket item":
              player.disp_basket()
              print("Type the name of the item you wish to toss.")
@@ -239,8 +261,19 @@ class player:
                 pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                 player.arrange_storage()
              else:
-                player.basket.remove(moveditem)
-                arrange_storage()
+                if player.storage.count(moveditem) > 1:
+                      print("How many do you want to move?")
+                      numitems = int(input(">>> "))
+                      if numitems > player.storage.count(moveditem) or numitems < 1:
+                         print("You can't do that.")
+                      elif numitems <= player.storage.count(moveditem):
+                         for i in range(numitems):
+                            player.basket.remove(moveditem)
+                      else:
+                         print("You can't do that.")
+                else:
+                  player.basket.remove(moveditem)
+                player.arrange_storage()
           elif option == "5" or option == "view storage":
              player.disp_storage()
              player.item_info()
@@ -331,7 +364,7 @@ class items:
 
     
 def house():
-    os.system('cls')
+    os.system("cls")
     choice = False
     yn = ""
     while choice == False:
@@ -352,8 +385,9 @@ def house():
        print(color.PURPLE + "[3]" + color.END + "Info")
        print(color.PURPLE + "[4]" + color.END + "Storage")
        print(color.PURPLE + "[5]" + color.END + "Create")
+       print(color.PURPLE + "[6]" + color.END + "Save Game")
        if player.hascat == True:
-          print(color.PURPLE + "[6]" + color.END + "Cat")
+          print(color.PURPLE + "[7]" + color.END + "Cat")
        print(72 * "-")
        option = input(color.PURPLE + ">>> " + color.END).lower()
        if option == "1" or option == "go outside":
@@ -391,15 +425,17 @@ def house():
        elif option == "5" or option == "create":
           os.system('cls')
           create()
-       elif (option == "6" or option == "cat") and player.hascat == True:
-          cat()
+       elif (option == "7" or option == "cat") and player.hascat == True:
+          kitty()
+       elif option == "6" or option == "save game":
+          save_game()
        else:
           print("That is not an acceptable answer.")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           house()
 
 
-def cat():
+def kitty():
    os.system("cls")
    choice = False
    while choice == False:
@@ -411,7 +447,7 @@ def cat():
          _    /   ,    \/\_
         ((____|    )_-\ \_-`
          `-----'`-----` `--`""")
-      print(30 * "-" , cat.name , 30 * "-")
+      print(30 * "-" , cat().name , 30 * "-")
       print(color.PURPLE + "[1]" + color.END + "Pet")
       print(color.PURPLE + "[2]" + color.END + "Feed")
       print(color.PURPLE + "[3]" + color.END + "Stats")
@@ -425,7 +461,7 @@ def cat():
             C.affection = C.affection + 1
             print(cat.name + " is more affectionate towards you!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-            cat()
+            kitty()
       elif option == "2" or option == "feed":
          if not any(item in items.cat_items for item in player.storage):
             print("You have no food to give!")
@@ -441,20 +477,20 @@ def cat():
             C.hunger = C.hunger - 2
             print("Fed " + cat.name + "!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-            cat()
+            kitty()
       elif option == "3" or option == "stats":
          C.disp_stats()
          print("")
          print("Remember, you must take care of your cat!")
          print("You wouldn't want " + cat.name + " to run away!")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-         cat()
+         kitty()
       elif option == "4" or option == "rename":
          print("New name?")
          cat.name = str(input(">>> "))
          print("Ok!")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-         cat()
+         kitty()
       elif option == "5" or option == "go back":
          choice = True
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -462,7 +498,7 @@ def cat():
       else:
          print("Not an acceptable answer.")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-         cat()
+         kitty()
 
      
 
@@ -765,6 +801,9 @@ def town():
 def marketplace():
    os.system("cls")
    choice = False
+   common_price = 2
+   uncommon_price = 5
+   rare_price = 10
    while choice == False:
       print(r"""
     _______
@@ -785,38 +824,47 @@ def marketplace():
          if sellitem not in player.basket:
             print("Not a valid item.")
          else:
+            if player.basket.count(sellitem) > 1:
+                print("How many do you want to sell?")
+                numitems = int(input(">>> "))
+                if numitems > player.basket.count(sellitem) or numitems < 1:
+                   print("You can't do that.")
+                elif numitems <= player.basket.count(sellitem):
+                   for i in range(numitems):
+                      player.basket.remove(sellitem)
+                else:
+                   print("You can't do that.")
+            else:
+                player.basket.remove(sellitem)
             if sellitem in items.common_tree_items or sellitem in items.common_path_items or sellitem in items.common_creek_items:
-               print("I can give you 2 Disks.")
+               print("I can give you " + str(common_price * numitems) + " Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
-                  player.disks = player.disks + 2
-                  player.basket.remove(sellitem)
+                  player.disks = player.disks + (common_price * numitems)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
                   print("Not a valid answer.")
             elif sellitem in items.uncommon_tree_items or sellitem in items.uncommon_path_items or sellitem in items.uncommon_creek_items:
-               print("I can give you 5 Disks.")
+               print("I can give you " + str(common_price * numitems)+" Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
-                  player.disks = player.disks + 5
-                  player.basket.remove(sellitem)
+                  player.disks = player.disks + (common_price * numitems)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
                   print("Not a valid answer.")
             elif sellitem in items.rare_tree_items or sellitem in items.rare_path_items or sellitem in items.rare_creek_items:
-               print("I can give you 10 Disks.")
+               print("I can give you " + str(common_price * numitems)+" Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
-                  player.disks = player.disks + 10
-                  player.basket.remove(sellitem)
+                  player.disks = player.disks + (common_price * numitems)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -867,7 +915,6 @@ def marketplace():
 
 def next_day():
    os.system("cls")
-   global randbuyprice
    print(color.YELLOW + r"""   '
           .      '      .
     .      .     :     .      .
@@ -989,9 +1036,53 @@ def end_game():
    except SystemExit:
        os._exit(0)
 
-
-def start_game():
+def save_game():
    os.system("cls")
+   choice = False
+   while choice == False:
+      print("Would you like to save the game?")
+      print(color.PURPLE + "[1]" + color.END + "Yes")
+      print(color.PURPLE + "[2]" + color.END + "No")
+      option = input(color.PURPLE + ">>> " + color.END).lower()
+      if option == "1" or option == "yes":
+         choice = True
+         Player_Save = player
+         Cat_Save = C
+         Data_Save = [Player_Save, Cat_Save]
+         with open("Save File","wb") as file:
+            pickle.dump(Data_Save,file)
+         print("Game Saved!")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         house()
+      elif option == "2" or option == "no":
+         print("Alright...")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         house()
+      else:
+         print("That is not an acceptable answer.")
+
+def load_game():
+   global player
+   global C
+   if os.path.isfile('Save File') == False:
+      print("There is nothing to load. Exiting...")
+      sys.exit()
+   else:
+       with open("Save File","rb") as file:
+          savedata = pickle.load(file)
+       player = savedata[0]
+       C = savedata[1]
+       print(player.storage)
+       pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+       house()
+
+   
+def opening_game():
+   os.system("cls")
+   global randbuyprice
+   global player
+   global C
+   randbuyprice = random.randint(5,20)
    print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
    print(color.PURPLE + "A game where you live on the edge of a forest." + color.END)
    print(color.PURPLE + "Some call you wise, others call you a witch." + color.END)
@@ -1030,8 +1121,46 @@ def start_game():
       cat.debug_testing = False
    print("-----------------------------------------------------------------------------")
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   player = Player(20,[],[],8,10,1,420,5,0,False,False)
+   C = cat("",2,5)
    house()
 
+def start_game():
+   os.system("cls")
+   print(color.GREEN+r"""
+   ________
+                        .-'~~~-.
+   FORAGING           .'o  oOOOo`.
+                    :~~~-.oOo   o`.
+   SIMULATOR         `. \ ~-.  oOOo.
+   _________           `.; / ~.  OO:
+                       .'  ;-- `.o.'
+                      ,'  ; ~~--'~
+                      ;  ;
+_______\|/__________\\;_\\//___\|/________"""+color.END)
+   print("")
+   print("")
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   choice = False
+   while choice == False:
+      os.system("cls")
+      print(color.PURPLE + "Options:" + color.END)
+      print(color.PURPLE + "[1] " + color.END + "New Game")
+      print(color.PURPLE + "[2] " + color.END + "Load Game")
+      print(color.PURPLE + "[3] " + color.END + "Exit")
+      option = input(color.PURPLE + ">>> " + color.END).lower()
+      if option == "1" or option == "new game":
+         choice = True
+         opening_game()
+      elif option == "2" or option == "load game":
+         choice = True
+         load_game()
+      elif option == "3" or option == "exit":
+         print(color.PURPLE + "Entering reality...." + color.END)
+         choice = True
+         sys.exit()
+      else:
+         print("That is not an acceptable answer.")
 
 def main():
    start_game()
