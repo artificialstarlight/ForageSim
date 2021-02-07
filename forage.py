@@ -1,17 +1,17 @@
-#TODO: Make basket upgrade usable/equipable
-#TODO: Make items in marketplace vary by price
+#TODO: Make basket upgrade usable/equipable -- DONE
+#TODO: Make items in marketplace vary by price 
 #TODO: Make altar usable in house when created
 #TODO: Add enemy wild animal encounters in forest
-#TODO: Add positive wild animal encounters in forest
+#TODO: Add positive wild animal encounters in forest -- ADDED CAT
 #TODO: Add story and conflict
-#TODO: put 2 more time warning messages before sleep KO
+#TODO: put 2 more time warning messages before sleep KO --DONE
 #TODO: Add consequences for not completing villager quests
 #TODO: Add place in village to check suspicion
-#TODO: Fix deadly crafting bug
 
 import sys
 import random
 import os
+import traceback
 from collections import Counter
 
 class color: 
@@ -34,6 +34,20 @@ class useful_stuff:
             if n > c2[k]:
                 return False
         return True
+
+class cat:
+   debug_testing = False
+   name = ""
+   hunger = 2 #min 0 (not hungry), max 10 (very hungry)
+   affection = 5 #min 0 max 10
+   def disp_stats():
+      print("Hunger: " + str(cat.hunger) + "/10" + " " + "Affection: " + str(cat.affection) + "/10")
+   def reset():
+      cat.name = ""
+      cat.hunger = 2
+      cat.affection = 5
+
+C = cat()    
 class player:
     health = 20
     max_health = 20
@@ -48,6 +62,7 @@ class player:
     townsfolk_helped = 0
     cansleep = False
     passed_out = False
+    hascat = False
     def disp_stats():
        hhmm = '{:02d}:{:02d}'.format(*divmod(player.time, 60))
        print("Health: " + str(player.health) + "/20"," Disks: " + str(player.disks)," Day: " + str(player.day)," Time: " + str(hhmm))
@@ -60,12 +75,42 @@ class player:
        for letter in Counter(player.basket):
           print(letter+":",Counter(player.basket)[letter])
     def inc_time(mins):
+       if player.hascat == True:
+          rand_deplete_stats = random.randint(0,75)
+          if rand_deplete_stats <= 25:
+             pass
+          elif rand_deplete_stats > 25 and rand_deplete_stats <= 50:
+             if C.hunger < 10:
+                C.hunger = C.hunger + 2
+             if C.affection > 0:
+                C.affection = C.affection - 1
+          else:
+             if C.hunger < 10:
+                C.hunger = C.hunger + 3
+             if C.affection > 0:
+                C.affection = C.affection - 2
+          if C.hunger >= 7 or C.affection <= 3:
+             print(color.RED + "MEOWWWW..." + color.END)
+             print(color.RED + "Oh no! Did you forget to take care of your cat?" + color.END)
+             print(color.RED + "You better hurry up and do that before they run away!" + color.END)
+          if C.hunger == 10 and C.affection == 0:
+             print(color.RED + "Meow..." + color.END)
+             print(color.RED + "Oh no.. you must've forgot to take care of your cat." + color.END)
+             print(color.RED + "Looks like they've gone off looking for a better home." + color.END)
+             player.hascat = False
+             C.reset()
        player.time = player.time + mins
        if player.time >= 840:
           player.cansleep = True
        if player.time == 1140:
           print(color.RED + "You are running low on time." + color.END)
           print(color.RED + "You have 3 hours to get to bed before your health suffers." + color.END)
+       if player.time == 1200:
+         print(color.RED + "You are running low on time." + color.END)
+         print(color.RED + "You have 2 hours to get to bed before your health suffers." + color.END)
+       if player.time == 1260:
+          print(color.RED + "You are running low on time." + color.END)
+          print(color.RED + "You have 1 hour to get to bed before your health suffers." + color.END)
        if player.time >= 1320:
           print(color.RED + "You didn't go to bed, did you?" + color.END)
           print(color.RED + "You are reminded of your own morrtality as you collapse on the ground." + color.END)
@@ -90,13 +135,17 @@ class player:
              rarity = "Uncommon"
           elif itemname in items.rare_tree_items or itemname in items.rare_path_items or itemname in items.rare_creek_items:
              rarity = "Rare"
+          else:
+             rarity = "Unknown"
           if itemname in items.askables:
              itemtype = "Creatable Item"
           elif itemname in items.buyables:
              itemtype = "Buyable Item"
+          elif itemname in items.cat_items:
+             itemtype = "Cat Food Item"
           else:
              itemtype = "Foraged Item"
-          print("Rarity: " + rarity + " --- "+ " Type: " + itemtype)
+          print("Rarity: " + rarity + " ----"+ " Type: " + itemtype)
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           player.item_info()
        else:
@@ -216,6 +265,8 @@ class items:
    offerables = ["bread loaf","strong incense","berry pie","berry juice",
                  "sweet perfume","vegetable soup","mushroom soup"]
 
+   cat_items = ["fish","cat food"]
+
 
    common_tree_items = ["stick","pine needles","oak bark","acorns","cedar resin"]
    uncommon_tree_items = ["honey","beeswax","morel","laetiporus"]
@@ -287,6 +338,8 @@ def house():
        print(color.PURPLE + "[3]" + color.END + "Info")
        print(color.PURPLE + "[4]" + color.END + "Storage")
        print(color.PURPLE + "[5]" + color.END + "Create")
+       if player.hascat == True:
+          print(color.PURPLE + "[6]" + color.END + "Cat")
        print(72 * "-")
        option = input(color.PURPLE + ">>> " + color.END).lower()
        if option == "1" or option == "go outside":
@@ -324,11 +377,72 @@ def house():
        elif option == "5" or option == "create":
           os.system('cls')
           create()
+       elif (option == "6" or option == "cat") and player.hascat == True:
+          cat()
        else:
           print("That is not an acceptable answer.")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           house()
-       
+
+
+def cat():
+   os.system("cls")
+   choice = False
+   while choice == False:
+      print(r"""
+                      |\_
+                      \` ..\
+                 __,.-" =__Y=
+               ."        )
+         _    /   ,    \/\_
+        ((____|    )_-\ \_-`
+         `-----'`-----` `--`""")
+      print(30 * "-" , cat.name , 30 * "-")
+      print(color.PURPLE + "[1]" + color.END + "Pet")
+      print(color.PURPLE + "[2]" + color.END + "Feed")
+      print(color.PURPLE + "[3]" + color.END + "Stats")
+      print(color.PURPLE + "[4]" + color.END + "Go Back")
+      option = input(color.PURPLE + ">>> " + color.END).lower()
+      if option == "1" or option == "pet":
+         print("You pet " + cat.name + "!")
+         print(color.PINK + "Purrr..." + color.END)
+         if C.affection < 10:
+            C.affection = C.affection + 1
+            print(cat.name + " is more affectionate towards you!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            cat()
+      elif option == "2" or option == "feed":
+         if not any(item in items.cat_items for item in player.storage):
+            print("You have no food to give!")
+         else:
+            print("Here are your options.")
+            for thing in Counter(player.storage):
+               if thing in items.cat_items:
+                  print(thing+":",Counter(player.storage)[thing])
+            print("Enter the name of the type of food.")
+            foodname = str(input(">>> ")).lower()
+            player.storage.remove(foodname)
+            C.hunger = C.hunger - 2
+            print("Fed " + cat.name + "!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            cat()
+      elif option == "3" or option == "stats":
+         C.disp_stats()
+         print("")
+         print("Remember, you must take care of your cat!")
+         print("You wouldn't want " + cat.name + " to run away!")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         cat()
+      elif option == "4" or option == "go back":
+         choice = True
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         house()
+      else:
+         print("Not an acceptable answer.")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         cat()
+
+     
 
 def create():
    os.system("cls")
@@ -370,7 +484,6 @@ def create():
    while valid == False:
       if choice == "1" or choice == "yes":
          valid = True
-         player.inc_time(30)
          #remove materials from storage, put the created thing into storage
          for m,n in enumerate(items.all_creatables):
             if n == itemname:
@@ -378,6 +491,11 @@ def create():
          for p in list_to_remove_from:
             player.storage.remove(p)
          player.storage.append(itemname)
+         if itemname == "large basket":
+            player.basketsize = 16
+            items.all_creatables.remove(itemname)
+            player.storage.remove(itemname)
+            print(color.PURPLE + "Upgraded Basket!" + color.END)
       elif choice == "2" or choice == "no":
          valid = True
          create()
@@ -472,6 +590,7 @@ def forage(place):
       if option == "1" or option == "forage":
          player.inc_time(30)
          print("Looking...")
+         animal_chance_encounter(place)
          if place == 1: #fallen trees
             encounter = random.randint(0,100)
             if encounter <= 50:
@@ -508,6 +627,74 @@ def forage(place):
       if option == "2" or option == "go back":
          choice = True
          look_forest()
+
+def animal_chance_encounter(place):
+   yn = ""
+   otherchoice = False
+   choice = False
+   rand_animal_enc = random.randint(0,300)
+   if cat.debug_testing == True:  #CAT DEBUG TESTING
+      rand_animal_enc = 3         #FORCES CAT ENCOUNTER
+   if rand_animal_enc <= 15 and player.hascat == False:
+      flee_chance = random.randint(0,100)
+      print("....")
+      print(color.BOLD + "Oh look! It's a cat!" + color.END)
+      while choice == False:
+         print(r"""
+                      |\_
+                      \` ..\
+                 __,.-" =__Y=
+               ."        )
+         _    /   ,    \/\_
+        ((____|    )_-\ \_-`
+         `-----'`-----` `--`""")
+         print(color.PURPLE + "[1]" + color.END + "Pet")
+         print(color.PURPLE + "[2]" + color.END + "Go Back")
+         option = input(color.PURPLE + ">>> " + color.END).lower()
+         if option == "1" or option == "pet":
+            choice = True
+            print("You pet the cat!")
+            if flee_chance <= 10:
+               print("...It got scared and ran away!")
+               pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+               forage(place)
+            else:
+               print(color.PINK + "..Meow?" + color.END)
+               print("It looks like it wants to come with you!")
+               print(color.PINK + "Purrr.." + color.END)
+               while otherchoice == False:
+                  print("Accept the kitty?")
+                  print(color.PURPLE + "[1]" + color.END + "Yes")
+                  print(color.PURPLE + "[2]" + color.END + "No")
+                  yn = input(color.PURPLE + ">>> " + color.END).lower()
+                  if yn == "1" or yn == "yes":
+                     otherchoice = True
+                     print("The kitty will follow you home!")
+                     player.hascat = True
+                     print("Name the kitty:")
+                     cat.name = str(input(">>> "))
+                     print("Ok!")
+                     print("You can now find FISH at the creek!")
+                     print("You can now buy CAT FOOD at the marketplace!")
+                     items.common_creek_items.append("fish")
+                     items.buyables.append("cat food")
+                     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+                     forage(place)
+                  elif yn == "2" or yn == "no":
+                     otherchoice = True
+                     print("The kitty accepts your choice and wanders away.")
+                     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+                     forage(place)
+                  else:
+                     print("Not a valid answer.")
+         elif option == "2" or option == "go back":
+            choice = True
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            forage(place)
+         else:
+            print("Not a valid answer.")
+   else:
+      return
 
 def town():
    os.system("cls")
@@ -682,6 +869,8 @@ def next_day():
    player.day = player.day + 1
    randbuyprice = random.randint(5,20)
    player.cansleep = False
+   if player.hascat == True:
+      cat.hunger = 5
    if player.day == 10:
       end_game()
    player.time = 420
@@ -786,7 +975,7 @@ def start_game():
    print(color.PURPLE + "You can help people, or hurt them, the choice will be yours." + color.END)
    print(color.PURPLE + "But in the end, the fate of the small town is in your hands." + color.END)
    print("")
-   print(color.PURPLE + "You have TWO WEEKS." + color.END)
+   print(color.PURPLE + "You have ONE MONTH." + color.END)
    print(color.PURPLE + "Good luck." + color.END)
    print("")
    print("")
@@ -797,6 +986,24 @@ def start_game():
    print("Please report any bugs or obvious issues to...alexneely8@gmail.com")
    print("Unless you know me, the creator, already. In which case..you can just tell me.")
    print("-------------------------------------------------------------------------------")
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   os.system("cls")
+   print("-------------------------------------------------------------------------------")
+   print("Hello again! Sorry to keep you waiting from the game!")
+   print("You have an option here to BETA TEST the CAT feature.")
+   print("While a CAT is a rare random encounter, enabling CAT TEST..")
+   print("Will guarantee the encounter to be triggered, so you can report any bugs to me!")
+   print("Turn CAT TEST on?")
+   print("[1] Yes  [2] No")
+   cattest = str(input(">>> ")).lower()
+   if cattest == "1" or cattest == "yes":
+      cat.debug_testing = True
+   elif cattest == "2" or cattest == "no":
+      cat.debug_testing = False
+   else:
+      print("That's not a valid answer, so CAT TEST will be off.")
+      cat.debug_testing = False
+   print("-----------------------------------------------------------------------------")
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
    house()
 
@@ -813,6 +1020,10 @@ if __name__ == '__main__':
             sys.exit(0)
         except SystemExit:
             os._exit(0)
+    except:
+        with open("exceptions.log", "a") as logfile:
+            traceback.print_exc(file=logfile)
+        raise
 
 ################################################################
 
