@@ -1,3 +1,13 @@
+#TODO: Make basket upgrade usable/equipable
+#TODO: Make items in marketplace vary by price
+#TODO: Make altar usable in house when created
+#TODO: Add enemy wild animal encounters in forest
+#TODO: Add positive wild animal encounters in forest
+#TODO: Add story and conflict
+#TODO: put 2 more time warning messages before sleep KO
+#TODO: Add consequences for not completing villager quests
+#TODO: Add place in village to check suspicion
+#TODO: Fix deadly crafting bug
 
 import sys
 import random
@@ -17,12 +27,19 @@ class color:
    UNDERLINE = '\033[4m'
    END = '\033[0m'
 
+class useful_stuff:
+   def counterSubset(list1, list2):
+        c1, c2 = Counter(list1), Counter(list2)
+        for k, n in c1.items():
+            if n > c2[k]:
+                return False
+        return True
 class player:
     health = 20
     max_health = 20
-    storage = []
+    storage = ["fly agaric","belladonna berries","fly agaric"]
     basket = []
-    basketsize = 5
+    basketsize = 8
     disks = 5
     day = 1
     time = 420 #420 mins = 7 AM, 1320 mins = 12 AM
@@ -80,6 +97,8 @@ class player:
           else:
              itemtype = "Foraged Item"
           print("Rarity: " + rarity + " --- "+ " Type: " + itemtype)
+          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+          player.item_info()
        else:
           player.arrange_storage()
     def arrange_storage():
@@ -119,8 +138,7 @@ class player:
              else:
                 print("Emptied basket.")
                 pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-                for i in player.basket:
-                   player.storage.append(i)
+                player.storage.extend(player.basket)
                 player.basket.clear()
              player.arrange_storage()
           elif option == "2" or option == "fill basket":
@@ -319,7 +337,7 @@ def create():
    os.system("cls")
    itemname = ""
    for c,i in enumerate(items.craftlist):
-      can_create = all(elem in player.storage for elem in items.craftlist[c])
+      can_create = useful_stuff.counterSubset(items.craftlist[c],player.storage)
       if can_create == True:
          creatable_ints.append(c)
    for j in creatable_ints:
@@ -347,25 +365,26 @@ def create():
    print(*materials, sep = "\n")
    print("Create?")
    print("[1] Yes     [2] No")
-   choice = str(input(">>> "))
+   choice = str(input(">>> ")).lower()
    valid = False
    while valid == False:
-      if choice == "1" or choice == "Yes":
+      if choice == "1" or choice == "yes":
          valid = True
          player.inc_time(30)
          #remove materials from storage, put the created thing into storage
-         for m,n in enumerate(creatables):
+         for m,n in enumerate(items.all_creatables):
             if n == itemname:
-               list_to_remove_from = m
-         for p in items.craftlist[list_to_remove_from]:
+               list_to_remove_from = items.craftlist[m]
+         for p in list_to_remove_from:
             player.storage.remove(p)
          player.storage.append(itemname)
-      elif choice == "2" or choice == "No":
+      elif choice == "2" or choice == "no":
          valid = True
          create()
       else:
          print("Not a valid answer")
-      
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   house()  
 
 def forest():
    os.system('cls')
@@ -607,14 +626,13 @@ def marketplace():
                   print("Not a valid answer.")
          marketplace()
       elif option == "2" or option == "buy":
-         randbuyprice = random.randint(5,20)
          print("Great! Take a look at what we have.")
          print(*items.buyables, sep = "\n")
          print("")
          print("Prices vary, today everything is " + str(randbuyprice) + " Disks.")
          print("Type the name of the item you want to buy, else X to go back.")
          buyitem = str(input(">>> ")).lower()
-         if buyitem not in items.buyables:
+         if buyitem not in items.buyables and buyitem != "x":
             print("Not a valid item.")
          elif buyitem == "x":
             marketplace()
@@ -638,6 +656,7 @@ def marketplace():
 
 def next_day():
    os.system("cls")
+   global randbuyprice
    print(color.YELLOW + r"""   '
           .      '      .
     .      .     :     .      .
@@ -661,8 +680,9 @@ def next_day():
 
    
    player.day = player.day + 1
+   randbuyprice = random.randint(5,20)
    player.cansleep = False
-   if player.day == 5:
+   if player.day == 10:
       end_game()
    player.time = 420
    if player.passed_out == True:
@@ -772,7 +792,7 @@ def start_game():
    print("")
    print("-------------------------------------------------------------------------------")
    print("Hello! This is actually a testing version of FORAGING SIMULATOR!")
-   print("You'll have 5 days in this one, and you won't get to see the main storyline or conflicts.")
+   print("You'll have 10 days in this one, and you won't get to see the main storyline or conflicts.")
    print("Though it is hopefully still somewhat fun, the purpose of this release is to TEST gameplay!")
    print("Please report any bugs or obvious issues to...alexneely8@gmail.com")
    print("Unless you know me, the creator, already. In which case..you can just tell me.")
