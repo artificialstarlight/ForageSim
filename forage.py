@@ -1,10 +1,8 @@
-#TODO: Make basket upgrade usable/equipable -- DONE
 #TODO: Make items in marketplace vary by price 
 #TODO: Make altar usable in house when created
 #TODO: Add enemy wild animal encounters in forest
-#TODO: Add positive wild animal encounters in forest -- ADDED CAT
+#TODO: Add positive wild animal encounters in forest -- [ADDED CAT]
 #TODO: Add story and conflict
-#TODO: put 2 more time warning messages before sleep KO --DONE
 #TODO: Add consequences for not completing villager quests
 #TODO: Add place in village to check suspicion
 
@@ -54,7 +52,7 @@ class player:
     storage = []
     basket = []
     basketsize = 8
-    disks = 5
+    disks = 10
     day = 1
     time = 420 #420 mins = 7 AM, 1320 mins = 12 AM
     reputation = 5 #min 0 max 10
@@ -67,13 +65,31 @@ class player:
        hhmm = '{:02d}:{:02d}'.format(*divmod(player.time, 60))
        print("Health: " + str(player.health) + "/20"," Disks: " + str(player.disks)," Day: " + str(player.day)," Time: " + str(hhmm))
     def disp_storage():
+       raritycolor = ""
        for letter in Counter(player.storage):
-          print(letter+":",Counter(player.storage)[letter])
+          if letter in items.uncommon_tree_items or letter in items.uncommon_path_items or letter in items.uncommon_creek_items:
+             raritycolor = color.GREEN
+          elif letter in items.rare_tree_items or letter in items.rare_path_items or letter in items.rare_creek_items:
+             raritycolor = color.YELLOW
+          elif letter in items.common_tree_items or letter in items.common_path_items or letter in items.common_creek_items:
+             raritycolor = ""
+          else:
+             raritycolor = color.DARKCYAN
+          print(raritycolor + letter+color.END + ":",Counter(player.storage)[letter])
        #print(type(Counter(player.storage)))
        #print(*player.storage, sep = "\n")
     def disp_basket():
        for letter in Counter(player.basket):
-          print(letter+":",Counter(player.basket)[letter])
+          raritycolor = ""
+          if letter in items.uncommon_tree_items or letter in items.uncommon_path_items or letter in items.uncommon_creek_items:
+             raritycolor = color.GREEN
+          elif letter in items.rare_tree_items or letter in items.rare_path_items or letter in items.rare_creek_items:
+             raritycolor = color.YELLOW
+          elif letter in items.common_tree_items or letter in items.common_path_items or letter in items.common_creek_items:
+             raritycolor = ""
+          else:
+             raritycolor = color.DARKCYAN
+          print(raritycolor + letter+ color.END + ":",Counter(player.basket)[letter])
     def inc_time(mins):
        if player.hascat == True:
           rand_deplete_stats = random.randint(0,75)
@@ -231,7 +247,7 @@ class player:
              pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
              player.arrange_storage()
           elif option == "6" or option == "view basket":
-             player.disp_basket
+             player.disp_basket()
              player.item_info()
              pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
              player.arrange_storage()
@@ -769,7 +785,7 @@ def marketplace():
          if sellitem not in player.basket:
             print("Not a valid item.")
          else:
-            if sellitem in common_tree_items or sellitem in common_path_items or sellitem in common_creek_items:
+            if sellitem in items.common_tree_items or sellitem in items.common_path_items or sellitem in items.common_creek_items:
                print("I can give you 2 Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
@@ -805,7 +821,7 @@ def marketplace():
                   print("Okay then.")
                else:
                   print("Not a valid answer.")
-            elif sellitem in items.all_creatables():
+            elif sellitem in items.all_creatables:
                randprice = random.randint(1,10)
                print("A created item? Prices may vary day to day.")
                print("I can give you " + str(randprice) + " Disks.")
@@ -937,7 +953,7 @@ def errand():
       print(color.PURPLE + "[2]" + color.END + "No")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "yes":
-         if randitem not in basket:
+         if randitem not in player.basket:
             print(color.CYAN + "You don't even have the item!" + color.END)
             print(color.CYAN + "Come back later if you can..." + color.END)
          else:
