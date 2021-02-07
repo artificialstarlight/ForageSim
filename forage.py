@@ -57,7 +57,7 @@ class player:
     disks = 5
     day = 1
     time = 420 #420 mins = 7 AM, 1320 mins = 12 AM
-    suspicion = 0
+    reputation = 5 #min 0 max 10
     danger = 0
     townsfolk_helped = 0
     cansleep = False
@@ -79,11 +79,9 @@ class player:
           rand_deplete_stats = random.randint(0,75)
           if rand_deplete_stats <= 25:
              pass
-          elif rand_deplete_stats > 25 and rand_deplete_stats <= 50:
+          elif rand_deplete_stats > 25 and rand_deplete_stats <= 60:
              if C.hunger < 10:
                 C.hunger = C.hunger + 1
-             if C.affection > 0:
-                C.affection = C.affection - 1
           else:
              if C.hunger < 10:
                 C.hunger = C.hunger + 2
@@ -93,7 +91,7 @@ class player:
              print(color.RED + "MEOWWWW..." + color.END)
              print(color.RED + "Oh no! Did you forget to take care of your cat?" + color.END)
              print(color.RED + "You better hurry up and do that before they run away!" + color.END)
-          if C.hunger == 10 and C.affection == 0:
+          if C.hunger >= 10 and C.affection <= 0:
              print(color.RED + "Meow..." + color.END)
              print(color.RED + "Oh no.. you must've forgot to take care of your cat." + color.END)
              print(color.RED + "Looks like they've gone off looking for a better home." + color.END)
@@ -390,7 +388,7 @@ def cat():
    choice = False
    while choice == False:
       print(r"""
-                      |\_
+                      |\_/|   
                       \` ..\
                  __,.-" =__Y=
                ."        )
@@ -415,6 +413,7 @@ def cat():
       elif option == "2" or option == "feed":
          if not any(item in items.cat_items for item in player.storage):
             print("You have no food to give!")
+            print("Food must be in storage before feeding.")
          else:
             print("Here are your options.")
             for thing in Counter(player.storage):
@@ -625,6 +624,7 @@ def forage(place):
          print(color.BOLD + "You got: " + str(item_got) + "!" + color.END)
          if len(player.basket) < player.basketsize:
             player.basket.append(item_got)
+            print("You have " + str(player.basketsize - len(player.basket)) + " spaces left in your basket.")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             forage(place)
          else:
@@ -642,13 +642,13 @@ def animal_chance_encounter(place):
    rand_animal_enc = random.randint(0,300)
    if cat.debug_testing == True:  #CAT DEBUG TESTING
       rand_animal_enc = 3         #FORCES CAT ENCOUNTER
-   if rand_animal_enc <= 5 and player.hascat == False:
+   if rand_animal_enc <= 3 and player.hascat == False:
       flee_chance = random.randint(0,100)
       print("....")
       print(color.BOLD + "Oh look! It's a cat!" + color.END)
       while choice == False:
          print(r"""
-                      |\_
+                      |\_/|          
                       \` ..\
                  __,.-" =__Y=
                ."        )
@@ -661,7 +661,7 @@ def animal_chance_encounter(place):
          if option == "1" or option == "pet":
             choice = True
             print("You pet the cat!")
-            if flee_chance <= 10:
+            if flee_chance <= 20:
                print("...It got scared and ran away!")
                pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                forage(place)
@@ -683,6 +683,7 @@ def animal_chance_encounter(place):
                      print("Ok!")
                      print("You can now find FISH at the creek!")
                      print("You can now buy CAT FOOD at the marketplace!")
+                     items.common_creek_items.append("fish")
                      items.common_creek_items.append("fish")
                      items.buyables.append("cat food")
                      pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -992,6 +993,7 @@ def start_game():
    print("Though it is hopefully still somewhat fun, the purpose of this release is to TEST gameplay!")
    print("Please report any bugs or obvious issues to...alexneely8@gmail.com")
    print("Unless you know me, the creator, already. In which case..you can just tell me.")
+   print("If the game crashes for any reason, you can find the bug report in the exceptions.log file!")
    print("-------------------------------------------------------------------------------")
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
    os.system("cls")
