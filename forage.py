@@ -40,12 +40,12 @@ class cat:
    name = ""
    hunger = 2 #min 0 (not hungry), max 10 (very hungry)
    affection = 5 #min 0 max 10
-   def disp_stats():
-      print("Hunger: " + str(cat.hunger) + "/10" + " " + "Affection: " + str(cat.affection) + "/10")
+   def disp_stats(self):
+      print("Hunger: " + str(self.hunger) + "/10" + " " + "Affection: " + str(self.affection) + "/10")
    def reset():
-      cat.name = ""
-      cat.hunger = 2
-      cat.affection = 5
+      cat().name = ""
+      cat().hunger = 2
+      cat().affection = 5
 
 C = cat()    
 class player:
@@ -81,12 +81,12 @@ class player:
              pass
           elif rand_deplete_stats > 25 and rand_deplete_stats <= 50:
              if C.hunger < 10:
-                C.hunger = C.hunger + 2
+                C.hunger = C.hunger + 1
              if C.affection > 0:
                 C.affection = C.affection - 1
           else:
              if C.hunger < 10:
-                C.hunger = C.hunger + 3
+                C.hunger = C.hunger + 2
              if C.affection > 0:
                 C.affection = C.affection - 2
           if C.hunger >= 7 or C.affection <= 3:
@@ -98,7 +98,7 @@ class player:
              print(color.RED + "Oh no.. you must've forgot to take care of your cat." + color.END)
              print(color.RED + "Looks like they've gone off looking for a better home." + color.END)
              player.hascat = False
-             C.reset()
+             cat.reset()
        player.time = player.time + mins
        if player.time >= 840:
           player.cansleep = True
@@ -280,7 +280,7 @@ class items:
    rare_path_items = ["belladonna berries"]
    
 
-   common_creek_items = ["stick","pebbles","morel","oak bark"]
+   common_creek_items = ["stick","pebbles","morel","oak bark","clovers"]
    uncommon_creek_items = ["violets","snake shed","thorny branch"]
    rare_creek_items = ["animal bone"]
 
@@ -354,7 +354,7 @@ def house():
              if yn == "1" or yn == "yes":
                  print("You lie down...")
                  while player.health < 20:
-                    pc.health = pc.health + 1
+                    player.health = player.health + 1
                  choice = True
                  next_day()
           else:
@@ -401,7 +401,8 @@ def cat():
       print(color.PURPLE + "[1]" + color.END + "Pet")
       print(color.PURPLE + "[2]" + color.END + "Feed")
       print(color.PURPLE + "[3]" + color.END + "Stats")
-      print(color.PURPLE + "[4]" + color.END + "Go Back")
+      print(color.PURPLE + "[4]" + color.END + "Rename")
+      print(color.PURPLE + "[5]" + color.END + "Go Back")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "pet":
          print("You pet " + cat.name + "!")
@@ -433,7 +434,13 @@ def cat():
          print("You wouldn't want " + cat.name + " to run away!")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          cat()
-      elif option == "4" or option == "go back":
+      elif option == "4" or option == "rename":
+         print("New name?")
+         cat.name = str(input(">>> "))
+         print("Ok!")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         cat()
+      elif option == "5" or option == "go back":
          choice = True
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          house()
@@ -593,25 +600,25 @@ def forage(place):
          animal_chance_encounter(place)
          if place == 1: #fallen trees
             encounter = random.randint(0,100)
-            if encounter <= 50:
+            if encounter <= 60:
                item_got = random.choice(items.common_tree_items)
-            elif encounter > 50 and encounter < 90:
+            elif encounter > 60 and encounter < 90:
                item_got = random.choice(items.uncommon_tree_items)
             elif encounter >= 90:
                item_got = random.choice(items.rare_tree_items)
          elif place == 2: #path
             encounter = random.randint(0,100)
-            if encounter <= 50:
+            if encounter <= 60:
                item_got = random.choice(items.common_path_items)
-            elif encounter > 50 and encounter < 90:
+            elif encounter > 60 and encounter < 90:
                item_got = random.choice(items.uncommon_path_items)
             elif encounter >= 90:
                item_got = random.choice(items.rare_path_items)
          elif place == 3: #creek
             encounter = random.randint(0,100)
-            if encounter <= 50:
+            if encounter <= 60:
                item_got = random.choice(items.common_creek_items)
-            elif encounter > 50 and encounter < 90:
+            elif encounter > 60 and encounter < 90:
                item_got = random.choice(items.uncommon_creek_items)
             elif encounter >= 90:
                item_got = random.choice(items.rare_creek_items)
@@ -635,7 +642,7 @@ def animal_chance_encounter(place):
    rand_animal_enc = random.randint(0,300)
    if cat.debug_testing == True:  #CAT DEBUG TESTING
       rand_animal_enc = 3         #FORCES CAT ENCOUNTER
-   if rand_animal_enc <= 15 and player.hascat == False:
+   if rand_animal_enc <= 5 and player.hascat == False:
       flee_chance = random.randint(0,100)
       print("....")
       print(color.BOLD + "Oh look! It's a cat!" + color.END)
