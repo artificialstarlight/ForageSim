@@ -1,5 +1,6 @@
 # ForageSim
 ----Foraging Simulator game written in Python.----
+
 This is ForageSim, a game where you live in a forest and get to FORAGE things!
 
 You can also CREATE items with the things you find!
