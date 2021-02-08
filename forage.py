@@ -129,7 +129,7 @@ class Player:
           rand_deplete_stats = random.randint(0,75)
           if rand_deplete_stats <= 25:
              pass
-          elif rand_deplete_stats > 25 and rand_deplete_stats <= 60:
+          elif rand_deplete_stats > 25 and rand_deplete_stats <= 40:
              if C.hunger < 20:
                 C.hunger = C.hunger + 1
              if C.affection > 0 and C.hastoy == False:
@@ -523,7 +523,8 @@ def altar():
                 print("Change your ways..or we will destroy you.")
             elif player.spirit_reputation >4 and player.spirit_reputation <= 7:
                 print("..You are in good standing with us.")
-                print("If you continue to treat us well, we will reward you.")
+                print("We will protect you from the wilds of the forest.")
+                print("If you continue to treat us well, we will reward you further.")
             elif player.spirit_reputation <= 0:
                 os.system("cls")
                 print(color.RED + "YOU HAVE GREATLY OFFENDED US, THE FOREST SPIRITS." + color.END)
@@ -902,7 +903,7 @@ def enemy_chance_encounter(place):
                    _//    _// ~}
                                 """)
     print("....")
-    if flee_chance <= 10:
+    if flee_chance <= 10 or (player.hasaltar == True and player.spirit_reputation > 4):
         print("You escape unharmed.")
     elif flee_chance <= 50 and flee_chance > 10:
         print("You escaped and lost " + str(health_lost) + " health!")
@@ -1062,7 +1063,7 @@ def marketplace():
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
-                  player.disks = player.disks + (common_price * numitems)
+                  player.disks = player.disks + (uncommon_price * numitems)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1073,7 +1074,7 @@ def marketplace():
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
-                  player.disks = player.disks + (common_price * numitems)
+                  player.disks = player.disks + (rare_price * numitems)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1205,7 +1206,7 @@ def townsfolk_rand_encounter():
       print(color.CYAN + "And I'll need it by the end of the day." + color.END)
       print(color.CYAN + "I'll be in the town if you need me.." + color.END)
       print(color.CYAN + "But if you really can't make it, then that's fine, I guess." + color.END)
-      print(color.CYAN + "I'll give you " + str(offered_disks) + " Disks " + " for it though!" + color.END)
+      print(color.CYAN + "I'll give you " + str(offered_disks) + " Disks " + "for it though!" + color.END)
       print(color.CYAN + "Anyways, bye!" + color.END)
       pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
       house()
@@ -1227,6 +1228,8 @@ def errand():
          if randitem not in player.basket:
             print(color.CYAN + "You don't even have the item!" + color.END)
             print(color.CYAN + "Come back later if you can..." + color.END)
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            town()
          else:
             print(color.CYAN + "Oh! My " + str(randitem) + "!" + color.END)
             player.basket.remove(randitem)
@@ -1241,11 +1244,13 @@ def errand():
             town()
       elif option == "2" or option == "no":
          print(color.CYAN + "No?.. Well, okay then." + color.END)
+         player.reputation = player.reputation - 2
          valid = True
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          town()
       else:
          print("Not a valid answer.")
+         errand()
 
 
 def burn_stake():
