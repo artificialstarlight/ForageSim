@@ -5,6 +5,7 @@
 #TODO: Add story and conflict
 #TODO: Add consequences for not completing villager quests
 #TODO: Add place in village to check suspicion
+#TODO: Add Cat Toy item
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -44,14 +45,16 @@ class cat:
    def __init__(self,name,hunger,affection):
       self.debug_testing = False
       self.name = ""
-      self.hunger = 2 #min 0 (not hungry), max 10 (very hungry)
-      self.affection = 5 #min 0 max 10
+      self.hunger = 0 #min 0 (not hungry), max 20 (very hungry)
+      self.affection = 20 #min 0 max 10
+      self.hastoy = False
+      self.toywear = 10 #10 good, 0 broken
    def disp_stats(self):
-      print("Hunger: " + str(self.hunger) + "/10" + " " + "Affection: " + str(self.affection) + "/10")
+      print("Hunger: " + str(self.hunger) + "/20" + " " + "Affection: " + str(self.affection) + "/20" + " Has toy: " + str(self.hastoy))
    def reset(self):
       self.name = ""
-      self.hunger = 2
-      self.affection = 5
+      self.hunger = 0
+      self.affection = 20
 
 class Player:
     def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,townsfolk_helped,cansleep,hascat):
@@ -104,15 +107,15 @@ class Player:
           if rand_deplete_stats <= 25:
              pass
           elif rand_deplete_stats > 25 and rand_deplete_stats <= 60:
-             if C.hunger < 10:
+             if C.hunger < 20:
                 C.hunger = C.hunger + 1
-             if C.affection > 0:
-                C.affection = C.affection -1
-          if C.hunger >= 7 or C.affection <= 3:
+             if C.affection > 0 and C.hastoy == False:
+                C.affection = C.affection - 1
+          if C.hunger >= 15 or C.affection <= 3:
              print(color.RED + "MEOWWWW..." + color.END)
              print(color.RED + "Oh no! Did you forget to take care of your cat?" + color.END)
              print(color.RED + "You better hurry up and do that before they run away!" + color.END)
-          if C.hunger >= 10 and C.affection <= 0:
+          if C.hunger >= 20 and C.affection <= 0:
              print(color.RED + "Meow..." + color.END)
              print(color.RED + "Oh no.. you must've forgot to take care of your cat." + color.END)
              print(color.RED + "Looks like they've gone off looking for a better home." + color.END)
@@ -306,7 +309,7 @@ class items:
                       "candle","strong incense","luck charm",
                       "protection amulet","berry juice","berry pie",
                       "bitter tea","mild poison","mushroom soup","wreath","altar",
-                     "large basket"]
+                     "large basket","cat toy"]
    
    askables = ["love potion","curse talisman","money charm",
                       "health potion","sweet tea","deadly poison",
@@ -318,7 +321,7 @@ class items:
    offerables = ["bread loaf","strong incense","berry pie","berry juice",
                  "sweet perfume","vegetable soup","mushroom soup"]
 
-   cat_items = ["fish","cat food"]
+   cat_items = ["fish","cat food","cat toy"]
 
 
    common_tree_items = ["stick","pine needles","oak bark","acorns","cedar resin"]
@@ -364,7 +367,8 @@ class items:
     ["morel","morel","laetiporus","laetiporus","salt"],#mushroom soup
     ["stick","stick","stick","violets","violets"], #wreath
     ["animal bone","animal bone","snake shed","stick","stick","pebbles","candle"], #altar
-    ["stick","stick","stick","stick","stick","stick","string","cloth","oak bark"] #large basket
+    ["stick","stick","stick","stick","stick","stick","string","cloth","oak bark"],#large basket
+    ["stick","string","string","pebbles"] #cat toy
       
     ]
 
@@ -453,18 +457,20 @@ def kitty():
          _    /   ,    \/\_
         ((____|    )_-\ \_-`
          `-----'`-----` `--`""")
-      print(30 * "-" , cat().name , 30 * "-")
+      print(30 * "-" , cat.name , 30 * "-")
       print(color.PURPLE + "[1]" + color.END + "Pet")
       print(color.PURPLE + "[2]" + color.END + "Feed")
       print(color.PURPLE + "[3]" + color.END + "Stats")
       print(color.PURPLE + "[4]" + color.END + "Rename")
       print(color.PURPLE + "[5]" + color.END + "Go Back")
+      if "cat toy" in player.storage:
+          print(color.PURPLE + "[6]" + color.END + "Play")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "pet":
          print("You pet " + cat.name + "!")
          print(color.PINK + "Purrr..." + color.END)
-         if C.affection < 10:
-            C.affection = C.affection + 1
+         if C.affection < 20:
+            C.affection = C.affection + 2
             print(cat.name + " is more affectionate towards you!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             kitty()
@@ -480,7 +486,7 @@ def kitty():
             print("Enter the name of the type of food.")
             foodname = str(input(">>> ")).lower()
             player.storage.remove(foodname)
-            C.hunger = C.hunger - 2
+            C.hunger = C.hunger - 4
             print("Fed " + cat.name + "!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             kitty()
@@ -501,6 +507,14 @@ def kitty():
          choice = True
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          house()
+      elif option == "6" or option == "play":
+          player.storage.remove("cat toy")
+          print("You gave " + cat.name + " a toy!")
+          C.hastoy = True
+          print(cat.name + " won't require affection as much")
+          print("until the toy wears out.")
+          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+          kitty()   
       else:
          print("Not an acceptable answer.")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -615,7 +629,7 @@ def forest():
        else:
           print("That is not an acceptable answer.")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-       
+          forest()
 
 def look_forest():
    os.system("cls")
@@ -810,6 +824,7 @@ def marketplace():
    common_price = 2
    uncommon_price = 5
    rare_price = 10
+   numitems = 1
    while choice == False:
       print(r"""
     _______
@@ -947,12 +962,19 @@ def next_day():
    randbuyprice = random.randint(5,20)
    player.cansleep = False
    if player.hascat == True:
-      cat.hunger = 5
+      cat.hunger = cat.hunger + 3
+      if C.hastoy == True:
+          C.toywear = C.toywear - 1
+          if C.toywear <= 0:
+              C.hastoy = False
    if player.day == 10:
       end_game()
    player.time = 420
    if player.passed_out == True:
-      player.health = 15
+      player.health = player.health - 5
+      if player.health <= 0:
+          death = "Exhaustion"
+          game_over(death)
    player.passed_out = False
    print("It's the next day.")
    print(color.BOLD + "Time to wake up!" + color.END)
@@ -1027,6 +1049,22 @@ def errand():
       else:
          print("Not a valid answer.")
 
+def game_over(death):
+    os.system("cls")
+    print(color.BOLD + "You died...." + color.END)
+    print(color.BOLD + "Of.. " + death + color.END)
+    print("Maybe the forest life isn't for you!")
+    print("You can always try again, though.")
+    print(color.BOLD + "Here are your in-game stats:" + color.END)
+    print("Disks: " + str(player.disks))
+    print("Townsfolk helped: " + str(player.townsfolk_helped))
+    print(color.BOLD + "Thanks for playing!" + color.END)
+    print(color.PURPLE + " Game Ended" + color.END)
+    try:
+        sys.exit(0)
+    except SystemExit:
+        os._exit(0)
+
 
 def end_game():
    os.system("cls")
@@ -1078,7 +1116,6 @@ def load_game():
           savedata = pickle.load(file)
        player = savedata[0]
        C = savedata[1]
-       print(player.storage)
        pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
        house()
 
