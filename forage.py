@@ -509,6 +509,10 @@ def altar():
                     print("Not a valid item.")
                     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                     altar()
+            else:
+                print("You have nothing to offer.")
+                pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+                altar()
         elif option == "2" or option == "talk to spirits":
             player.reputation = player.reputation - 1
             print(color.PURPLE + "The forest spirits speak." + color.END)
@@ -1401,16 +1405,16 @@ def save_game():
 def load_game():
    global player
    global C
-   if os.path.isfile('Save File') == False:
-      print("There is nothing to load. Exiting...")
-      sys.exit()
-   else:
-       with open("Save File","rb") as file:
-          savedata = pickle.load(file)
-       player = savedata[0]
-       C = savedata[1]
-       pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-       house()
+   with open("Save File","rb") as file:
+       if not file.read(1):
+          print("There is nothing to load. Exiting...")
+          sys.exit()
+       else:
+           savedata = pickle.load(file)
+           player = savedata[0]
+           C = savedata[1]
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+           house()
 
    
 def opening_game():
