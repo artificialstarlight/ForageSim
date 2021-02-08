@@ -6,11 +6,17 @@
 #TODO: Add consequences for not completing villager quests
 #TODO: Add place in village to check suspicion
 
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)
+
+    
 import sys
 import random
 import os
 import traceback
 import pickle
+import pygame
 from collections import Counter
 
 class color: 
@@ -1127,6 +1133,9 @@ def opening_game():
 
 def start_game():
    os.system("cls")
+   pygame.mixer.init()
+   pygame.mixer.music.load('theme.wav')
+   pygame.mixer.music.play(3)
    print(color.GREEN+r"""
    ________
                         .-'~~~-.
@@ -1141,6 +1150,7 @@ _______\|/__________\\;_\\//___\|/________"""+color.END)
    print("")
    print("")
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   pygame.mixer.music.stop()
    choice = False
    while choice == False:
       os.system("cls")
