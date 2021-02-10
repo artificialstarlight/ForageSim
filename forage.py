@@ -1730,7 +1730,7 @@ def view_achievements():
         else:
             aa = file.readlines()
             for line in aa:
-                print(line)
+                print(" " + line)
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             start_game()
 
