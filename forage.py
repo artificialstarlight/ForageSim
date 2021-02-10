@@ -1504,28 +1504,13 @@ def true_ending2():
         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
         os.system("cls")
         pygame.mixer.music.stop()
-        print(color.GREEN+r"""
-       ________
-                            .-'~~~-.
-       FORAGING           .'o  oOOOo`.
-                        :~~~-.oOo   o`.
-       SIMULATOR         `. \ ~-.  oOOo.
-       _________           `.; / ~.  OO:
-                           .'  ;-- `.o.'
-                          ,'  ; ~~--'~
-                          ;  ;
-    _______\|/__________\\;_\\//___\|/________"""+color.END)
-        print("")
         print("")
         print(color.BOLD + "Thanks for playing!" + color.END)
         print(color.PURPLE + " Game Ended" + color.END)
-        print(color.BOLD + "Find your ACHIEVEMENTS in the achievements.txt file!" + color.END)
+        print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
         generate_achievements()
         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+        start_game()
 
         
 def true_ending():
@@ -1567,28 +1552,13 @@ def true_ending():
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     pygame.mixer.music.stop()
     os.system("cls")
-    print(color.GREEN+r"""
-   ________
-                        .-'~~~-.
-   FORAGING           .'o  oOOOo`.
-                    :~~~-.oOo   o`.
-   SIMULATOR         `. \ ~-.  oOOo.
-   _________           `.; / ~.  OO:
-                       .'  ;-- `.o.'
-                      ,'  ; ~~--'~
-                      ;  ;
-_______\|/__________\\;_\\//___\|/________"""+color.END)
-    print("")
     print("")
     print(color.BOLD + "Thanks for playing!" + color.END)
     print(color.PURPLE + " Game Ended" + color.END)
-    print(color.BOLD + "Find your ACHIEVEMENTS in the achievements.txt file!" + color.END)
+    print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
     generate_achievements()
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-    try:
-        sys.exit(0)
-    except SystemExit:
-        os._exit(0)
+    start_game()
 
 def game_over(death):
     os.system("cls")
@@ -1596,22 +1566,12 @@ def game_over(death):
     print(color.BOLD + "Of.. " + death + color.END)
     print("Maybe the forest life isn't for you!")
     print("You can always try again, though.")
-    print(color.BOLD + "Here are your in-game stats:" + color.END)
-    print("Disks: " + str(player.disks))
-    print("Townsfolk helped: " + str(player.townsfolk_helped))
-    if player.hascat == True:
-        print("You even got a cat!")
-    if player.hasaltar == True:
-        print("And you at least tried to please the spirits.")
-    print(color.BOLD + "Find your ACHIEVEMENTS in the achievements.txt file!" + color.END)
+    print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
     generate_achievements()
     print(color.BOLD + "Thanks for playing!" + color.END)
     print(color.PURPLE + " Game Ended" + color.END)
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-    try:
-        sys.exit(0)
-    except SystemExit:
-        os._exit(0)
+    start_game()
 
 
 def end_game():
@@ -1620,14 +1580,11 @@ def end_game():
    print(color.BOLD + "I hope you enjoyed it!" + color.END)
    print("But if you're seeing this, you didn't get to the TRUE ending.")
    print("Keep trying!")
-   print(color.BOLD + "Find your ACHIEVEMENTS in the achievements.txt file!" + color.END)
+   print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
    generate_achievements()
    print(color.BOLD + "Thanks for playing!" + color.END)
    print(color.PURPLE + " Game Ended" + color.END)
-   try:
-       sys.exit(0)
-   except SystemExit:
-       os._exit(0)
+   start_game()
 
 def save_game():
    os.system("cls")
@@ -1670,8 +1627,11 @@ def load_game():
 
 def generate_achievements():
     with open("Achievements.txt","w") as a_file:
-        for item in achievements.a_list:
-            a_file.write("%s\n" % item)
+        if not achievements.a_list:
+            a_file.write("No Achivements")
+        else:
+            for item in achievements.a_list:
+                a_file.write("%s\n" % item)
    
 def opening_game():
    os.system("cls")
@@ -1742,7 +1702,8 @@ _______\|/__________\\;_\\//___\|/________"""+color.END)
       print(color.PURPLE + "Options:" + color.END)
       print(color.PURPLE + "[1] " + color.END + "New Game")
       print(color.PURPLE + "[2] " + color.END + "Load Game")
-      print(color.PURPLE + "[3] " + color.END + "Exit")
+      print(color.PURPLE + "[3] " + color.END + "View Achievements")
+      print(color.PURPLE + "[4] " + color.END + "Exit")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "new game":
          choice = True
@@ -1750,12 +1711,27 @@ _______\|/__________\\;_\\//___\|/________"""+color.END)
       elif option == "2" or option == "load game":
          choice = True
          load_game()
-      elif option == "3" or option == "exit":
+      elif option == "4" or option == "exit":
          print(color.PURPLE + "Entering reality...." + color.END)
          choice = True
          sys.exit()
+      elif option == "3" or option == "view achievements":
+          view_achievements()
       else:
          print("That is not an acceptable answer.")
+
+def view_achievements():
+    with open("Achievements.txt","r") as file:
+        if not file.read(1):
+            print("No achievements yet!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            start_game()
+        else:
+            aa = file.read()
+            for line in aa:
+                print(line)
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            start_game()
 
 def main():
    start_game()
