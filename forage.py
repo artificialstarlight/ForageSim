@@ -514,7 +514,7 @@ def altar():
             | | |        ,`-'.          | | |
             | |_|       ( O O )         |_| |
             |            ( ^ )              |
-            | X           HHH           X   |
+            | X           HHH             X |
             |_______________________________|
             """)
         print("")
@@ -583,6 +583,7 @@ def altar():
 def kitty():
    os.system("cls")
    choice = False
+   foods = ["fish","cat food"]
    while choice == False:
       print(r"""
                       |\_/|   
@@ -620,9 +621,12 @@ def kitty():
                   print(thing+":",Counter(player.storage)[thing])
             print("Enter the name of the type of food.")
             foodname = str(input(">>> ")).lower()
-            player.storage.remove(foodname)
-            C.hunger = C.hunger - 4
-            print("Fed " + cat.name + "!")
+            if foodname in foods:
+                player.storage.remove(foodname)
+                C.hunger = C.hunger - 4
+                print("Fed " + cat.name + "!")
+            else:
+                print("Not a valid food!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             kitty()
       elif option == "3" or option == "stats":
@@ -712,6 +716,7 @@ def create():
          if itemname == "altar":
              player.storage.remove(itemname)
              player.hasaltar = True
+             player.reputation = player.reputation - 2
              print(color.PURPLE + "The ALTAR was now added to your house!" + color.END)
       elif choice == "2" or choice == "no":
          valid = True
