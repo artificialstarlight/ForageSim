@@ -133,6 +133,8 @@ class Player:
        if player.reputation <=3:
            print(color.RED + "The townspeople are angry..."+ color.END)
        if player.reputation <= 0:
+           os.system("cls")
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
            burn_stake()
        if player.hascat == True:
           rand_deplete_stats = random.randint(0,75)
@@ -1661,7 +1663,7 @@ def load_game():
 
 def generate_achievements():
     with open("Achievments.txt","w") as a_file:
-        a_file.write(*achievments.a_list, sep = "\n")
+        a_file.write(*achievements.a_list, sep = "\n")
    
 def opening_game():
    os.system("cls")
