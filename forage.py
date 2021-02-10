@@ -1565,6 +1565,7 @@ def game_over(death):
     print(color.BOLD + "You died...." + color.END)
     print(color.BOLD + "Of.. " + death + color.END)
     print("Maybe the forest life isn't for you!")
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     print("You can always try again, though.")
     print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
     generate_achievements()
@@ -1727,7 +1728,7 @@ def view_achievements():
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             start_game()
         else:
-            aa = file.read()
+            aa = file.readlines()
             for line in aa:
                 print(line)
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
