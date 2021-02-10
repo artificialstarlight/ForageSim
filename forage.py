@@ -1006,6 +1006,7 @@ def town():
 def fortune_teller():
     os.system("cls")
     recipe_chance = random.randint(0,100)
+    player.inc_time(30)
     print(color.PURPLE + r"""
 
                         *    .
@@ -1038,8 +1039,8 @@ def fortune_teller():
             print("Because you're becoming well-liked, you can have a RECIPE.")
             recipe_given = "hhhhhhh"
             while recipe_given not in player.recipes:
-                recipe_given = random.choice(items.all_creatables)
-                player.recipes.append(recipe_given)
+                recipe_given = random.choice(items.askables)
+            player.recipes.append(recipe_given)
             print("You got the recipe for " + recipe_given + "!")
     elif player.reputation > 7:
         print("I see..you helping others..being a good citizen..")
