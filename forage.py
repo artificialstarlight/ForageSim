@@ -351,9 +351,9 @@ class items:
 
    common_path_items = ["clovers","dandelion","rosemary","green sage","lemonbalm",
                         "lavender","blackberries","raspberries"]
-   uncommon_path_items = ["rose petals","hemlock","chamomile","ginger","wild carrot",
+   uncommon_path_items = ["rose petals","hemlock","chamomile","wild carrot",
                           "wild onion","wild garlic"]
-   rare_path_items = ["belladonna berries"]
+   rare_path_items = ["belladonna berries","ginger"]
    
 
    common_creek_items = ["stick","pebbles","morel","oak bark","clovers"]
@@ -480,8 +480,9 @@ def recipe_book():
         print("")
         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
         house()
+    recipes_no_repeat = list(dict.fromkeys(player.recipes))
     print("Here are your known recipes to CREATE items.")
-    for i in player.recipes:
+    for i in recipes_no_repeat:
         for k,j in enumerate(items.all_creatables):
             if j == i:
                 print("")
@@ -809,27 +810,27 @@ def forage(place):
          animal_chance_encounter(place)
          if place == 1: #fallen trees
             encounter = random.randint(0,100)
-            if encounter <= 60:
+            if encounter <= 70:
                item_got = random.choice(items.common_tree_items)
-            elif encounter > 60 and encounter < 90:
+            elif encounter > 70 and encounter < 95:
                item_got = random.choice(items.uncommon_tree_items)
-            elif encounter >= 90:
+            elif encounter >= 95:
                item_got = random.choice(items.rare_tree_items)
          elif place == 2: #path
             encounter = random.randint(0,100)
-            if encounter <= 60:
+            if encounter <= 70:
                item_got = random.choice(items.common_path_items)
-            elif encounter > 60 and encounter < 90:
+            elif encounter > 70 and encounter < 95:
                item_got = random.choice(items.uncommon_path_items)
-            elif encounter >= 90:
+            elif encounter >= 95:
                item_got = random.choice(items.rare_path_items)
          elif place == 3: #creek
             encounter = random.randint(0,100)
-            if encounter <= 60:
+            if encounter <= 70:
                item_got = random.choice(items.common_creek_items)
-            elif encounter > 60 and encounter < 90:
+            elif encounter > 70 and encounter < 95:
                item_got = random.choice(items.uncommon_creek_items)
-            elif encounter >= 90:
+            elif encounter >= 95:
                item_got = random.choice(items.rare_creek_items)
          print(color.BOLD + "You got: " + str(item_got) + "!" + color.END)
          if len(player.basket) < player.basketsize:
@@ -916,7 +917,7 @@ def animal_chance_encounter(place):
     rand_enemy_enc = random.randint(0,600)
     if rand_cat_enc <= 3:
         cat_chance_encounter(place)
-    if rand_enemy_enc <= 4:
+    if rand_enemy_enc <= 10:
         enemy_chance_encounter(place)
 
 def enemy_chance_encounter(place):
@@ -1091,8 +1092,6 @@ def marketplace():
                       player.basket.remove(sellitem)
                 else:
                    print("You can't do that.")
-            else:
-                player.basket.remove(sellitem)
             if sellitem in items.common_tree_items or sellitem in items.common_path_items or sellitem in items.common_creek_items:
                print("I can give you " + str(common_price * numitems) + " Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
@@ -1100,6 +1099,7 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (common_price * numitems)
+                  player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1111,6 +1111,7 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (uncommon_price * numitems)
+                  player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1122,19 +1123,19 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (rare_price * numitems)
+                  player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
                   print("Not a valid answer.")
-            elif sellitem in items.all_creatables:
-               randprice = random.randint(1,10)
+            elif sellitem in items.askables:
                print("A created item? Prices may vary day to day.")
-               print("I can give you " + str(randprice) + " Disks.")
+               print("I can give you " + str(randsellprice) + " Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
-                  player.disks = player.disks + randprice
+                  player.disks = player.disks + randsellprice
                   player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
@@ -1199,7 +1200,7 @@ def next_day():
 
    
    player.day = player.day + 1
-   randbuyprice = random.randint(5,20)
+   set_prices()
    player.cansleep = False
    if player.hascat == True:
       C.hunger = C.hunger + 3
@@ -1240,6 +1241,12 @@ def obtain_altar_recipe():
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     house()
 
+def set_prices():
+    global randbuyprice
+    global randsellprice
+    randbuyprice = random.randint(5,20)
+    randsellprice = random.randint(8,15)
+    
 def townsfolk_rand_encounter():
    global offered_disks
    global encounter
@@ -1539,10 +1546,9 @@ def load_game():
    
 def opening_game():
    os.system("cls")
-   global randbuyprice
    global player
    global C
-   randbuyprice = random.randint(5,20)
+   set_prices()
    """print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
    print(color.PURPLE + "A game where you live on the edge of a forest." + color.END)
    print(color.PURPLE + "Some call you wise, others call you a witch." + color.END)
