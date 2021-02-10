@@ -553,6 +553,7 @@ def altar():
                     player.storage.remove(to_offer)
                     print("Your offering was received.")
                     player.spirit_reputation = player.spirit_reputation + 1
+                    altar()
                 elif to_offer == "x":
                     altar()
                 else:
@@ -1453,6 +1454,11 @@ def burn_stake():
     print(color.RED + "WE ARE HERE." + color.END)
     print(color.RED + "WE, THE GOOD TOWNSFOLK, KNOW WHAT YOU'VE DONE." + color.END)
     print(color.RED + "WITCHCRAFT. SORCERY. EVILS." + color.END)
+    print(color.RED + "SPEAKING WITH SPIRITS IS SORCERY." + color.END)
+    print(color.RED + "WHAT SAY YOU IN YOUR DEFENSE?" + color.END)
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+    print(color.RED + "....." + color.END)
+    print(color.RED + "NOTHING?" + color.END)
     print(color.RED + "BURN. BURN. BURN." + color.END)
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     if player.immune == False:
@@ -1552,6 +1558,7 @@ def true_ending():
                        `:  `''''  :'
           """)
     print(color.GREEN + "...NO." + color.END)
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     print(color.GREEN + "WE ARE THE SPIRITS OF THE FOREST." + color.END)
     print(color.GREEN + "WE HAVE GRANTED THEM IMMUNITY." + color.END)
     print(color.GREEN + "COME. FLY WITH US." + color.END)
@@ -1662,8 +1669,9 @@ def load_game():
            house()
 
 def generate_achievements():
-    with open("Achievments.txt","w") as a_file:
-        a_file.write(*achievements.a_list, sep = "\n")
+    with open("Achievements.txt","w") as a_file:
+        for item in achievements.a_list:
+            a_file.write("%s\n" % item)
    
 def opening_game():
    os.system("cls")
