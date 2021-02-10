@@ -40,8 +40,8 @@ class useful_stuff:
 class achievements:
     a_list = []
     def add_achievement(string):
-        a_list.append(string)
-        a_list = list(dict.fromkeys(a_list))
+        achievements.a_list.append(string)
+        achievements.a_list = list(dict.fromkeys(achievements.a_list))
         
 class cat:
    def __init__(self,name,hunger,affection):
@@ -121,8 +121,8 @@ class Player:
              raritycolor = ""
           else:
              raritycolor = color.DARKCYAN
-          if letter in offerables:
-              print(raritycolor + letter+ color.END + ":",Counter(player.basket)[letter])
+          if letter in items.offerables:
+              print(raritycolor + letter+ color.END + ":",Counter(player.storage)[letter])
 
     def inc_time(self,mins):
        if player.hasaltar == True:
@@ -694,7 +694,7 @@ def kitty():
       if option == "1" or option == "pet":
          print("You pet " + cat.name + "!")
          print(color.PINK + "Purrr..." + color.END)
-         if C.affection < 20:
+         if C.affection + 2 <= 20:
             C.affection = C.affection + 2
             print(cat.name + " is more affectionate towards you!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -1163,6 +1163,7 @@ def marketplace():
    uncommon_price = 5
    rare_price = 10
    numitems = 1
+   toremove = 0
    while choice == False:
       print(r"""
     _______
@@ -1189,8 +1190,7 @@ def marketplace():
                 if numitems > player.basket.count(sellitem) or numitems < 1:
                    print("You can't do that.")
                 elif numitems <= player.basket.count(sellitem):
-                   for i in range(numitems):
-                      player.basket.remove(sellitem)
+                   print("Ok.")
                 else:
                    print("You can't do that.")
             if sellitem in items.common_tree_items or sellitem in items.common_path_items or sellitem in items.common_creek_items:
@@ -1200,7 +1200,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (common_price * numitems)
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1212,7 +1213,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (uncommon_price * numitems)
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1224,7 +1226,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (rare_price * numitems)
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1237,7 +1240,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + randsellprice
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
