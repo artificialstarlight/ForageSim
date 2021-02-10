@@ -50,7 +50,7 @@ class cat:
       self.affection = 20
 
 class Player:
-    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,spirit_reputation,townsfolk_helped,cansleep,hascat,hasaltar,immune):
+    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,spirit_reputation,townsfolk_helped,cansleep,hascat,hasaltar,immune,recipes,spirit_immune):
        self.health = 20
        self.max_health = 20
        self.storage = []
@@ -67,6 +67,8 @@ class Player:
        self.hascat = False
        self.hasaltar = False
        self.immune = False
+       self.recipes = []
+       self.spirit_immune = False
     def disp_stats(self):
        hhmm = '{:02d}:{:02d}'.format(*divmod(player.time, 60))
        print("Health: " + str(player.health) + "/20"," Disks: " + str(player.disks)," Day: " + str(player.day)," Time: " + str(hhmm))
@@ -115,12 +117,7 @@ class Player:
           if player.spirit_reputation <= 3:
              print(color.RED + "The forest spirits are angry..."+ color.END)
           if player.spirit_reputation <= 0:
-             os.system("cls")
-             print(color.RED + "YOU HAVE GREATLY OFFENDED US, THE FOREST SPIRITS." + color.END)
-             print(color.RED + "NO LONGER SHALL YOU LIVE HERE IN OUR FOREST." + color.END)
-             print(color.RED + "NO LONGER SHALL YOU TRANSGRESS US." + color.END)
-             print(color.RED + "YOU...WILL DIE." + color.END)
-             game_over("The forest spirit's wrath.")
+             true_ending2()
        if player.reputation <=3:
            print(color.RED + "The townspeople are angry..."+ color.END)
        if player.reputation <= 0:
@@ -419,10 +416,11 @@ def house():
        print(color.PURPLE + "[4]" + color.END + "Storage")
        print(color.PURPLE + "[5]" + color.END + "Create")
        print(color.PURPLE + "[6]" + color.END + "Save Game")
+       print(color.PURPLE + "[7]" + color.END + "Recipe Book")
        if player.hascat == True:
-          print(color.PURPLE + "[7]" + color.END + "Cat")
+          print(color.PURPLE + "[8]" + color.END + "Cat")
        if player.hasaltar == True:
-           print(color.PURPLE + "[8]" + color.END + "Altar")
+           print(color.PURPLE + "[9]" + color.END + "Altar")
        print(72 * "-")
        option = input(color.PURPLE + ">>> " + color.END).lower()
        if option == "1" or option == "go outside":
@@ -460,16 +458,48 @@ def house():
        elif option == "5" or option == "create":
           os.system('cls')
           create()
-       elif (option == "7" or option == "cat") and player.hascat == True:
+       elif (option == "8" or option == "cat") and player.hascat == True:
           kitty()
-       elif (option == "8" or option == "altar") and player.hasaltar == True:
+       elif (option == "9" or option == "altar") and player.hasaltar == True:
           altar()
        elif option == "6" or option == "save game":
           save_game()
+       elif option == "7" or option == "recipe book":
+           recipe_book()
        else:
           print("That is not an acceptable answer.")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           house()
+
+
+def recipe_book():
+    os.system("cls")
+    raritycolor = ""
+    if not player.recipes:
+        print("No recipes yet!")
+        print("")
+        pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+        house()
+    print("Here are your known recipes to CREATE items.")
+    for i in player.recipes:
+        for k,j in enumerate(items.all_creatables):
+            if j == i:
+                print("")
+                print("----- " + i + " -----")
+                recipe_list = items.craftlist[k]
+                for letter in Counter(recipe_list):
+                   if letter in items.uncommon_tree_items or letter in items.uncommon_path_items or letter in items.uncommon_creek_items:
+                      raritycolor = color.GREEN
+                   elif letter in items.rare_tree_items or letter in items.rare_path_items or letter in items.rare_creek_items:
+                      raritycolor = color.YELLOW
+                   elif letter in items.common_tree_items or letter in items.common_path_items or letter in items.common_creek_items:
+                      raritycolor = ""
+                   else:
+                      raritycolor = color.DARKCYAN
+                   print(raritycolor + letter+color.END + ":",Counter(recipe_list)[letter])
+    print("")
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+    house()
 
 def altar():
     os.system("cls")
@@ -530,17 +560,13 @@ def altar():
                 print("We will protect you from the wilds of the forest.")
                 print("If you continue to treat us well, we will reward you further.")
             elif player.spirit_reputation <= 0:
-                os.system("cls")
-                print(color.RED + "YOU HAVE GREATLY OFFENDED US, THE FOREST SPIRITS." + color.END)
-                print(color.RED + "NO LONGER SHALL YOU LIVE HERE IN OUR FOREST." + color.END)
-                print(color.RED + "NO LONGER SHALL YOU TRANSGRESS US." + color.END)
-                print(color.RED + "YOU...WILL DIE." + color.END)
-                game_over("The forest spirit's wrath.")
+                true_ending2()
             else:
                 print("..You have treated us well and appeased us with offerings.")
                 print("We will grant you the gift of immunity from fire and burns.")
                 print("You may find it useful...")
                 player.immune = True
+                player.spirit_immune = False
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             altar()
         elif option == "3" or option == "go back":
@@ -964,6 +990,9 @@ def town():
       elif option == "4" or option == "run errand":
          if encounter == False:
             print("You have no errands to run today.")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            town()
+
          else:
             choice = True
             errand()
@@ -972,10 +1001,11 @@ def town():
       else:
          print("That is not an acceptable answer.")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-
+         town()
 
 def fortune_teller():
     os.system("cls")
+    recipe_chance = random.randint(0,100)
     print(color.PURPLE + r"""
 
                         *    .
@@ -994,18 +1024,30 @@ def fortune_teller():
     if player.reputation <= 3:
         print("You'd better watch out. It seems you're not very popular among the townsfolk.")
         print("I've even heard rumors of evil witchcraft and sorcery.")
+        print("You haven't been meddling about with spirits, have you?")
+        print("You know that's very frowned upon...")
         print("In your future, I see...a burning wooden pillar...screams..pain..")
         print(".....")
-        print("My advice is to regain their trust before things go wrong.")
+        print("My advice is to regain the town's trust before things go wrong.")
     elif player.reputation <= 7 and player.reputation > 3:
-        print("I see in your future..the forest..its creatures..its riches..")
+        print("I see in your future..the forest..helping us..")
         print("You are in good standing with the townsfolk.")
-        print("Nothing should cause you disrupt to your way of life.")
+        print("Nothing should cause you disrupt to your way of life if you continue like this.")
+        print("...")
+        if recipe_chance <= 30:
+            print("Because you're becoming well-liked, you can have a RECIPE.")
+            recipe_given = "hhhhhhh"
+            while recipe_given not in player.recipes:
+                recipe_given = random.choice(items.all_creatables)
+                player.recipes.append(recipe_given)
+            print("You got the recipe for " + recipe_given + "!")
     elif player.reputation > 7:
         print("I see..you helping others..being a good citizen..")
         print("You are in very good standing with the townsfolk.")
         print("Everyone here seems to like you.")
-        print("Nothing should go wrong in this regard.")
+        print("We will protect you in the case of evil spirits.")
+        player.immune = False
+        player.spirit_immune = True
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     town()       
 
@@ -1062,7 +1104,7 @@ def marketplace():
                else:
                   print("Not a valid answer.")
             elif sellitem in items.uncommon_tree_items or sellitem in items.uncommon_path_items or sellitem in items.uncommon_creek_items:
-               print("I can give you " + str(common_price * numitems)+" Disks.")
+               print("I can give you " + str(uncommon_price * numitems)+" Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
@@ -1073,7 +1115,7 @@ def marketplace():
                else:
                   print("Not a valid answer.")
             elif sellitem in items.rare_tree_items or sellitem in items.rare_path_items or sellitem in items.rare_creek_items:
-               print("I can give you " + str(common_price * numitems)+" Disks.")
+               print("I can give you " + str(rare_price * numitems)+" Disks.")
                print(color.PURPLE + "[1]" + color.END + "Yes")
                print(color.PURPLE + "[2]" + color.END + "No")
                yn = input(color.PURPLE + ">>> " + color.END).lower()
@@ -1180,7 +1222,22 @@ def next_day():
    print("It's the next day.")
    print(color.BOLD + "Time to wake up!" + color.END)
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-   townsfolk_rand_encounter()
+   if player.day != 5:
+       townsfolk_rand_encounter()
+   else:
+       obtain_altar_recipe()
+
+def obtain_altar_recipe():
+    os.system("cls")
+    print(color.PURPLE + "The forest spirits are trying to tell you something..." + color.END)
+    print("We are the spirits of the forest of which you live..")
+    print("We would like to accept you as part of the forest life.")
+    print('"Build an ALTAR to us and we can protect you!"')
+    print("We can help you...")
+    player.recipes.append("altar")
+    print("ALTAR recipe added to recipe book!")
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+    house()
 
 def townsfolk_rand_encounter():
    global offered_disks
@@ -1189,9 +1246,9 @@ def townsfolk_rand_encounter():
    rand_enc = random.randint(0,100)
    randitem = random.choice(items.askables)
    offered_disks = random.randint(2,10)
-   for c,i in enumerate(items.askables):
+   """for c,i in enumerate(items.askables):
       if i == randitem:
-         materials = items.craftlist[c]
+         materials = items.craftlist[c]"""
    if rand_enc <= 40:
       encounter = True
       os.system("cls")
@@ -1203,9 +1260,14 @@ def townsfolk_rand_encounter():
       print(color.CYAN + "I'm from the town! I've come to you because I really need help with something!" + color.END)
       print(color.CYAN + "Can you please make me a " + str(randitem) + "?" + color.END)
       print(color.CYAN + "It's important..." + color.END)
-      print(color.CYAN + "To make it, you will need:" + color.END)
+      """print(color.CYAN + "To make it, you will need:" + color.END)
       for letter in Counter(materials):
-          print(letter+":",Counter(materials)[letter])
+          print(letter+":",Counter(materials)[letter])"""
+      if randitem not in player.recipes:
+          player.recipes.append(randitem)
+          print("I've added the item to you recipe book!")
+      else:
+          print("The item should be in your recipe book!")
       print("")
       print(color.CYAN + "And I'll need it by the end of the day." + color.END)
       print(color.CYAN + "I'll be in the town if you need me.." + color.END)
@@ -1280,7 +1342,64 @@ def burn_stake():
     elif player.immune == True:
         true_ending()
 
+def true_ending2():
+    os.system("cls")
+    pygame.mixer.init()
+    pygame.mixer.music.load('theme.wav')
+    pygame.mixer.music.play(3)
+    print(color.RED + "YOU HAVE GREATLY OFFENDED US, THE FOREST SPIRITS." + color.END)
+    print(color.RED + "NO LONGER SHALL YOU LIVE HERE IN OUR FOREST." + color.END)
+    print(color.RED + "NO LONGER SHALL YOU TRANSGRESS US." + color.END)
+    print(color.RED + "YOU...WILL DIE." + color.END)
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+    os.system("cls")
+    if player.spirit_immune == False:
+        game_over("The forest spirit's wrath.")
+    elif player.spirit_immune == True:
+        print("No.")
+        print(r"""
+   
+  //^\\\   ,;;;,                       
+ ((-_-))) (-_- ;                      
+  )))(((   >..'.    .:.     .--.      
+ ((_._ )  /.   .|  :-_-;   /-_-))
+ _))  ((_//|   ||  ,`-'.   ))-((
+ `(    )`' |___|),;,   \\_/,`  ))
+   \  /    | | |`' |___(/-'|___()  
+    )(     | | |   | | |   | | |  
+   /__\    |_|_|   |_|_|   |_|_|  
+   `''     `-'-'   `-'-'   `-'-'
+               """)
+        print("We, the townspeople, have noticed your kindess and willingness to abide by our laws.")
+        print("We will keep you safe..")
+        print("The spirits cannot claim you if you are not one of the forest.")
+        print("We invite you to join us, in our town.")
+        print("Come. We are here.")
+        pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+        os.system("cls")
+        pygame.mixer.music.stop()
+        print(color.GREEN+r"""
+       ________
+                            .-'~~~-.
+       FORAGING           .'o  oOOOo`.
+                        :~~~-.oOo   o`.
+       SIMULATOR         `. \ ~-.  oOOo.
+       _________           `.; / ~.  OO:
+                           .'  ;-- `.o.'
+                          ,'  ; ~~--'~
+                          ;  ;
+    _______\|/__________\\;_\\//___\|/________"""+color.END)
+        print("")
+        print("")
+        print(color.BOLD + "Thanks for playing!" + color.END)
+        print(color.PURPLE + " Game Ended" + color.END)
+        pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
 
+        
 def true_ending():
     os.system("cls")
     pygame.mixer.init()
@@ -1423,7 +1542,7 @@ def opening_game():
    global player
    global C
    randbuyprice = random.randint(5,20)
-   print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
+   """print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
    print(color.PURPLE + "A game where you live on the edge of a forest." + color.END)
    print(color.PURPLE + "Some call you wise, others call you a witch." + color.END)
    print(color.PURPLE + "But really, your passion is FORAGING items, as well as CRAFTING new ones." + color.END)
@@ -1431,7 +1550,7 @@ def opening_game():
    print(color.PURPLE + "But in the end, the fate of the small town is in your hands." + color.END)
    print("")
    print(color.PURPLE + "You have ONE MONTH." + color.END)
-   print(color.PURPLE + "Good luck." + color.END)
+   print(color.PURPLE + "Good luck." + color.END)"""
    print("")
    print("")
    print("-------------------------------------------------------------------------------")
@@ -1443,23 +1562,21 @@ def opening_game():
    print("-------------------------------------------------------------------------------")
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
    os.system("cls")
-   """print("-------------------------------------------------------------------------------")
-   print("Hello again! Sorry to keep you waiting from the game!")
-   print("You have an option here to BETA TEST the CAT feature.")
-   print("While a CAT is a rare random encounter, enabling CAT TEST..")
-   print("Will guarantee the encounter to be triggered, so you can report any bugs to me!")
-   print("Turn CAT TEST on?")
-   print("[1] Yes  [2] No")
-   cattest = str(input(">>> ")).lower()
-   if cattest == "1" or cattest == "yes":
-      cat.debug_testing = True
-   elif cattest == "2" or cattest == "no":
-      cat.debug_testing = False
-   else:
-      print("That's not a valid answer, so CAT TEST will be off.")
-      cat.debug_testing = False
-   print("-----------------------------------------------------------------------------")"""
-   player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False)
+   print(color.PURPLE + "..Hey! Your house is finally built." + color.END)
+   print(color.PURPLE + "Don't know why you wanted it all the way out here in the forest." + color.END)
+   print(color.PURPLE + "Maybe you just like fresh air." + color.END)
+   print(color.PURPLE + "..." + color.END)
+   print(color.PURPLE + "What's that? You like FORAGING and CRAFTING?" + color.END)
+   print(color.PURPLE + "Seems like a good enough reason. I'm sure it'll be fine, it's not too far from the town." + color.END)
+   print(color.PURPLE + "Few things you should know first." + color.END)
+   print(color.PURPLE + "Sorcery and witchcraft is illegal in these parts!" + color.END)
+   print(color.PURPLE + "Though if you don't care about all that, just know it's always best to be in good standing with others." + color.END)
+   print(color.PURPLE + "You know. Have a good reputation and all that. Save your back in case things go wrong." + color.END)
+   print(color.PURPLE + "Well, that's enough from me! I'll go back to my own town now." + color.END)
+   print(color.PURPLE + "Enjoy your new house!" + color.END)
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   os.system("cls")
+   player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False)
    C = cat("",2,5)
    house()
 
@@ -1566,9 +1683,4 @@ def test_time():
       elif testinput.lower() == "c":
          break
    print("-----ENDTEST----")
-
-
-
-
-
    
