@@ -1755,15 +1755,22 @@ _______\|/__________\\;_\\//___\|/________"""+color.END)
          print("That is not an acceptable answer.")
 
 def view_achievements():
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    rel_path = "game-data"
+    target = "Achievements.txt"
+    path = os.path.join(curpath, rel_path, target)
     try:
-        with open("Achievements.txt","r") as file:
-            aa = file.readlines()
-            for line in aa:
-                print(" " + line)
-            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-            start_game()
+        with open(path,"r") as file:
+           if not file.read(1):
+              print("No achievements yet!")
+           else:
+              aa = file.readlines()
+              for line in aa:
+                 print(" " + line)
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+           start_game()
     except IOError:
-            print("No achievements yet!")
+            print("Looks like your Achivements file is missing.")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             start_game()
 def main():
