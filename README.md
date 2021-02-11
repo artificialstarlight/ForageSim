@@ -12,7 +12,7 @@ This game is currently being TESTED. Please report any bugs to alexneely8@gmail.
 
 3. Navigate to ForageSim folder
 
-4. Move the second ForageSim folder inside the first ForageSim folder to wherever you want
+4. Move the second ForageSim folder (which is located inside the first ForageSim folder) to wherever you want
 
 5. Navigate to the second ForageSim folder
 
