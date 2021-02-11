@@ -1,5 +1,6 @@
-#TODO: Make altar usable in house when created
-#TODO: Add story and conflict
+#TODO: Make more items usable
+
+
 
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -11,6 +12,7 @@ import random
 import os
 import traceback
 import pickle
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 from collections import Counter
 
@@ -35,6 +37,12 @@ class useful_stuff:
                 return False
         return True
 
+class achievements:
+    a_list = []
+    def add_achievement(string):
+        achievements.a_list.append(string)
+        achievements.a_list = list(dict.fromkeys(achievements.a_list))
+        
 class cat:
    def __init__(self,name,hunger,affection):
       self.name = ""
@@ -43,7 +51,11 @@ class cat:
       self.hastoy = False
       self.toywear = 10 #10 good, 0 broken
    def disp_stats(self):
-      print("Hunger: " + str(self.hunger) + "/20" + " " + "Affection: " + str(self.affection) + "/20" + " Has toy: " + str(self.hastoy))
+      if self.hastoy == False:
+          hastoystr = "No"
+      else:
+          hastoystr = "Yes"
+      print("Hunger: " + str(self.hunger) + "/20" + " " + "Affection: " + str(self.affection) + "/20" + " Has toy: " + hastoystr)
    def reset(self):
       self.name = ""
       self.hunger = 0
@@ -109,8 +121,8 @@ class Player:
              raritycolor = ""
           else:
              raritycolor = color.DARKCYAN
-          if letter in offerables:
-              print(raritycolor + letter+ color.END + ":",Counter(player.basket)[letter])
+          if letter in items.offerables:
+              print(raritycolor + letter+ color.END + ":",Counter(player.storage)[letter])
 
     def inc_time(self,mins):
        if player.hasaltar == True:
@@ -121,6 +133,8 @@ class Player:
        if player.reputation <=3:
            print(color.RED + "The townspeople are angry..."+ color.END)
        if player.reputation <= 0:
+           os.system("cls")
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
            burn_stake()
        if player.hascat == True:
           rand_deplete_stats = random.randint(0,75)
@@ -139,6 +153,7 @@ class Player:
              print(color.RED + "Meow..." + color.END)
              print(color.RED + "Oh no.. you must've forgot to take care of your cat." + color.END)
              print(color.RED + "Looks like they've gone off looking for a better home." + color.END)
+             achievements.add_achievement("Terrible pet owner: Didn't take care of your cat")
              player.hascat = False
              C.reset()
        player.time = player.time + mins
@@ -157,6 +172,7 @@ class Player:
           print(color.RED + "You didn't go to bed, did you?" + color.END)
           print(color.RED + "You are reminded of your own morrtality as you collapse on the ground." + color.END)
           print(color.RED + "The forest spirits may take care of you this time, but there will be consequences tomorrow." + color.END)
+          achievements.add_achievement("Forgetful: Forgot to sleep and passed out")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           player.passed_out = True
           next_day()
@@ -211,7 +227,8 @@ class Player:
           print(color.PURPLE + "[4]" + color.END + "Toss Basket Item")
           print(color.PURPLE + "[5]" + color.END + "View Storage")
           print(color.PURPLE + "[6]" + color.END + "View Basket")
-          print(color.PURPLE + "[7]" + color.END + "Go Back")
+          print(color.PURPLE + "[7]" + color.END + "Use Item")
+          print(color.PURPLE + "[8]" + color.END + "Go Back")
           option = input(color.PURPLE + ">>> " + color.END).lower()
           if option == "1" or option == "empty basket":
              print("Here are the items in your basket.")
@@ -313,9 +330,11 @@ class Player:
              player.item_info()
              pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
              player.arrange_storage()
-          elif option == "7" or option == "go back":
+          elif option == "8" or option == "go back":
              choice = True
              house()
+          elif option == "7" or option == "use item":
+              use_item()
           else:
              print("Not a valid answer.")
              pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -330,16 +349,15 @@ class items:
                       "protection amulet","berry juice","berry pie",
                       "bitter tea","mild poison","mushroom soup","wreath","altar",
                      "large basket","cat toy"]
-   
    askables = ["love potion","curse talisman","money charm",
                       "health potion","sweet tea","deadly poison",
                       "vegetable soup","bread loaf","sweet perfume",
                       "candle","strong incense","luck charm",
                       "protection amulet","berry juice","berry pie",
                       "bitter tea","mild poison","mushroom soup","wreath"]
-   
    offerables = ["bread loaf","strong incense","berry pie","berry juice",
                  "sweet perfume","vegetable soup","mushroom soup","raspberries","blackberries","rose petals"]
+   useables = ["health potion","money charm", "mild poison","deadly poison"]
 
    cat_items = ["fish","cat food","cat toy"]
 
@@ -440,6 +458,7 @@ def house():
                  next_day()
           else:
              print("Wait, what? It's not time to sleep!")
+             achievements.add_achievement("Early Bird: Tried to sleep before nighttime!")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           house()
           if yn == "2" or yn == "no":
@@ -534,6 +553,7 @@ def altar():
                     player.storage.remove(to_offer)
                     print("Your offering was received.")
                     player.spirit_reputation = player.spirit_reputation + 1
+                    altar()
                 elif to_offer == "x":
                     altar()
                 else:
@@ -561,6 +581,7 @@ def altar():
                 print("We will protect you from the wilds of the forest.")
                 print("If you continue to treat us well, we will reward you further.")
             elif player.spirit_reputation <= 0:
+                achievements.add_achievement("Oathbreaker: Made the spirits angry!")
                 true_ending2()
             else:
                 print("..You have treated us well and appeased us with offerings.")
@@ -578,8 +599,79 @@ def altar():
             print("Not an acceptable answer.")
             altar()
                     
+def use_item():
+    os.system("cls")
+    if not any(thing in player.storage for thing in items.useables):
+        print("You have no items you can use!")
+        pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+        return
+    else:
+        print("Here are the items you can use.")
+        for i in player.storage:
+            for k,j in enumerate(items.useables):
+                if j == i:
+                    print("")
+                    print(i)
+        print("")
+        print("Type the name of the item you wish to USE.")
+        print("Or, 'x' to go back.")
+        useditem = str(input(">>> ")).lower()
+        if useditem not in player.storage and useditem != "x":
+           print("Not a valid item.")
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+           use_item()
+        elif useditem == "x":
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+           return
+        else:
+           if useditem == "health potion":
+               if player.health == 20:
+                   print("Cannot use health potion at max health!")
+                   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+                   use_item()
+               else:
+                   print("Used health potion!")
+                   for k in range(5):
+                       if player.health < 20:
+                          player.health = player.health + 1
+                   print("Recovered health!")
+                   player.storage.remove(useditem)
+           elif useditem == "money charm":
+               print("Used money charm!")
+               randgain = random.randint(1,6)
+               player.disks = player.disks + randgain
+               print("Gained " + str(randgain) + " Disks!")
+               player.storage.remove(useditem)
+           elif useditem == "mild poison":
+               print("Used mild poison!")
+               player.health = player.health - 5
+               print("But why would you do that...")
+               print("Lost 5 health!")
+               player.storage.remove(useditem)
+               if player.health <= 0:
+                  game_over("Poisoned yourself, for whatever reason.")
+                  achievements.add_achievement("Fool: Consumed posion!")
+           elif useditem == "deadly poison":
+               print("Are you sure about this one?")
+               print("It's called deadly for a reason.")
+               yn = ""
+               print(color.CYAN + "[1]" + color.END + "Yes")
+               print(color.CYAN + "[2]" + color.END + "No")
+               yn = str(input(">>> ")).lower()
+               if yn == "1" or yn == "yes":
+                  achievements.add_achievement("Extreme Fool: Consumed deadly poison!")
+                  game_over("Poisoned yourself with a deadly posion. Why would you do that?")
+               elif yn == "2" or yn == "no":
+                  print("Good. It's probably for the best you don't do that.")
+               else:
+                  print("Not a valid answer.")
+           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+           use_item()
                     
-
+                         
+        
+                
+        
 def kitty():
    os.system("cls")
    choice = False
@@ -605,7 +697,7 @@ def kitty():
       if option == "1" or option == "pet":
          print("You pet " + cat.name + "!")
          print(color.PINK + "Purrr..." + color.END)
-         if C.affection < 20:
+         if C.affection + 2 <= 20:
             C.affection = C.affection + 2
             print(cat.name + " is more affectionate towards you!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -712,11 +804,13 @@ def create():
             player.basketsize = 16
             items.all_creatables.remove(itemname)
             player.storage.remove(itemname)
+            achievements.add_achievement("Weaver: Upgraded your basket!")
             print(color.PURPLE + "Upgraded Basket!" + color.END)
          if itemname == "altar":
              player.storage.remove(itemname)
              player.hasaltar = True
              player.reputation = player.reputation - 2
+             achievements.add_achievement("Spiritual: Created an altar!")
              print(color.PURPLE + "The ALTAR was now added to your house!" + color.END)
       elif choice == "2" or choice == "no":
          valid = True
@@ -859,6 +953,7 @@ def cat_chance_encounter(place):
       flee_chance = random.randint(0,100)
       print("....")
       print(color.BOLD + "Oh look! It's a cat!" + color.END)
+      achievements.add_achievement("Lucky: Encountered a cat!")
       while choice == False:
          print(r"""
                       |\_/|          
@@ -876,6 +971,7 @@ def cat_chance_encounter(place):
             print("You pet the cat!")
             if flee_chance <= 20:
                print("...It got scared and ran away!")
+               achievements.add_achievement("Unlucky: A cat ran away from you!")
                pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                forage(place)
             else:
@@ -899,6 +995,7 @@ def cat_chance_encounter(place):
                      items.common_creek_items.append("fish")
                      items.common_creek_items.append("fish")
                      items.buyables.append("cat food")
+                     achievements.add_achievement("Pet Owner: Adopted a forest cat!")
                      pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
                      forage(place)
                   elif yn == "2" or yn == "no":
@@ -941,6 +1038,7 @@ def enemy_chance_encounter(place):
     print("....")
     if flee_chance <= 10 or (player.hasaltar == True and player.spirit_reputation > 4):
         print("You escape unharmed.")
+        achievements.add_achievement("Evader: Escaped a wild animal!")
     elif flee_chance <= 50 and flee_chance > 10:
         print("You escaped and lost " + str(health_lost) + " health!")
         player.health = player.health - health_lost
@@ -953,6 +1051,7 @@ def enemy_chance_encounter(place):
         print("You escaped and lost " + str(health_lost * 2) + " health!")
         player.health = player.health - (health_lost * 2)
     if player.health <= 0:
+        achievements.add_achievement("Weakling: Died to a wild animal attack!")
         game_over(" A wild animal encounter")
     else:
         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -1046,7 +1145,7 @@ def fortune_teller():
             recipe_given = "hhhhhhh"
             while recipe_given not in player.recipes:
                 recipe_given = random.choice(items.askables)
-            player.recipes.append(recipe_given)
+                player.recipes.append(recipe_given)
             print("You got the recipe for " + recipe_given + "!")
     elif player.reputation > 7:
         print("I see..you helping others..being a good citizen..")
@@ -1067,6 +1166,7 @@ def marketplace():
    uncommon_price = 5
    rare_price = 10
    numitems = 1
+   toremove = 0
    while choice == False:
       print(r"""
     _______
@@ -1093,8 +1193,7 @@ def marketplace():
                 if numitems > player.basket.count(sellitem) or numitems < 1:
                    print("You can't do that.")
                 elif numitems <= player.basket.count(sellitem):
-                   for i in range(numitems):
-                      player.basket.remove(sellitem)
+                   print("Ok.")
                 else:
                    print("You can't do that.")
             if sellitem in items.common_tree_items or sellitem in items.common_path_items or sellitem in items.common_creek_items:
@@ -1104,7 +1203,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (common_price * numitems)
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1116,7 +1216,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (uncommon_price * numitems)
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1128,7 +1229,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + (rare_price * numitems)
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1141,7 +1243,8 @@ def marketplace():
                yn = input(color.PURPLE + ">>> " + color.END).lower()
                if yn == "1" or yn == "yes":
                   player.disks = player.disks + randsellprice
-                  player.basket.remove(sellitem)
+                  for i in range(numitems):
+                      player.basket.remove(sellitem)
                elif yn == "2" or yn == "no":
                   print("Okay then.")
                else:
@@ -1224,6 +1327,7 @@ def next_day():
           player.spirit_reputation = player.spirit_reputation - 1
       if player.health <= 0:
           death = "Exhaustion"
+          achievements.add_achievement("Insomniac: Died from lack of sleep!")
           game_over(death)
    player.passed_out = False
    print("It's the next day.")
@@ -1317,12 +1421,14 @@ def errand():
             encounter = False
             valid = True
             player.townsfolk_helped = player.townsfolk_helped + 1
+            achievements.add_achievement("Helper: Helped a townsperson!")
             if player.reputation < 10:
                 player.reputation = player.reputation + 1
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             town()
       elif option == "2" or option == "no":
          print(color.CYAN + "No?.. Well, okay then." + color.END)
+         achievements.add_achievement("Denier: Denied a townsperson their request!")
          player.reputation = player.reputation - 2
          valid = True
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -1348,9 +1454,15 @@ def burn_stake():
     print(color.RED + "WE ARE HERE." + color.END)
     print(color.RED + "WE, THE GOOD TOWNSFOLK, KNOW WHAT YOU'VE DONE." + color.END)
     print(color.RED + "WITCHCRAFT. SORCERY. EVILS." + color.END)
+    print(color.RED + "SPEAKING WITH SPIRITS IS SORCERY." + color.END)
+    print(color.RED + "WHAT SAY YOU IN YOUR DEFENSE?" + color.END)
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+    print(color.RED + "....." + color.END)
+    print(color.RED + "NOTHING?" + color.END)
     print(color.RED + "BURN. BURN. BURN." + color.END)
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     if player.immune == False:
+        achievements.add_achievement("Witch: Burnt at stake!")
         game_over("Witchcraft accusations, burned to death by the townsfolk.")
     elif player.immune == True:
         true_ending()
@@ -1388,29 +1500,17 @@ def true_ending2():
         print("The spirits cannot claim you if you are not one of the forest.")
         print("We invite you to join us, in our town.")
         print("Come. We are here.")
+        achievements.add_achievement("Community: Saved by the town!")
         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
         os.system("cls")
         pygame.mixer.music.stop()
-        print(color.GREEN+r"""
-       ________
-                            .-'~~~-.
-       FORAGING           .'o  oOOOo`.
-                        :~~~-.oOo   o`.
-       SIMULATOR         `. \ ~-.  oOOo.
-       _________           `.; / ~.  OO:
-                           .'  ;-- `.o.'
-                          ,'  ; ~~--'~
-                          ;  ;
-    _______\|/__________\\;_\\//___\|/________"""+color.END)
-        print("")
         print("")
         print(color.BOLD + "Thanks for playing!" + color.END)
         print(color.PURPLE + " Game Ended" + color.END)
+        print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
+        generate_achievements()
         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+        start_game()
 
         
 def true_ending():
@@ -1443,54 +1543,36 @@ def true_ending():
                        `:  `''''  :'
           """)
     print(color.GREEN + "...NO." + color.END)
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     print(color.GREEN + "WE ARE THE SPIRITS OF THE FOREST." + color.END)
     print(color.GREEN + "WE HAVE GRANTED THEM IMMUNITY." + color.END)
     print(color.GREEN + "COME. FLY WITH US." + color.END)
     print(color.GREEN + "LIVE AND HAVE SOVEREIGNTY." + color.END)
+    achievements.add_achievement("Animist: Saved by the spirits!")
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     pygame.mixer.music.stop()
     os.system("cls")
-    print(color.GREEN+r"""
-   ________
-                        .-'~~~-.
-   FORAGING           .'o  oOOOo`.
-                    :~~~-.oOo   o`.
-   SIMULATOR         `. \ ~-.  oOOo.
-   _________           `.; / ~.  OO:
-                       .'  ;-- `.o.'
-                      ,'  ; ~~--'~
-                      ;  ;
-_______\|/__________\\;_\\//___\|/________"""+color.END)
-    print("")
     print("")
     print(color.BOLD + "Thanks for playing!" + color.END)
     print(color.PURPLE + " Game Ended" + color.END)
+    print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
+    generate_achievements()
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-    try:
-        sys.exit(0)
-    except SystemExit:
-        os._exit(0)
+    start_game()
 
 def game_over(death):
     os.system("cls")
     print(color.BOLD + "You died...." + color.END)
     print(color.BOLD + "Of.. " + death + color.END)
     print("Maybe the forest life isn't for you!")
+    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     print("You can always try again, though.")
-    print(color.BOLD + "Here are your in-game stats:" + color.END)
-    print("Disks: " + str(player.disks))
-    print("Townsfolk helped: " + str(player.townsfolk_helped))
-    if player.hascat == True:
-        print("You even got a cat!")
-    if player.hasaltar == True:
-        print("And you at least tried to please the spirits.")
+    print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
+    generate_achievements()
     print(color.BOLD + "Thanks for playing!" + color.END)
     print(color.PURPLE + " Game Ended" + color.END)
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-    try:
-        sys.exit(0)
-    except SystemExit:
-        os._exit(0)
+    start_game()
 
 
 def end_game():
@@ -1499,15 +1581,11 @@ def end_game():
    print(color.BOLD + "I hope you enjoyed it!" + color.END)
    print("But if you're seeing this, you didn't get to the TRUE ending.")
    print("Keep trying!")
-   print(color.BOLD + "Here are your in-game stats:" + color.END)
-   print("Disks: " + str(player.disks))
-   print("Townsfolk helped: " + str(player.townsfolk_helped))
+   print(color.BOLD + "Find your ACHIEVEMENTS in the View Achievements menu" + color.END)
+   generate_achievements()
    print(color.BOLD + "Thanks for playing!" + color.END)
    print(color.PURPLE + " Game Ended" + color.END)
-   try:
-       sys.exit(0)
-   except SystemExit:
-       os._exit(0)
+   start_game()
 
 def save_game():
    os.system("cls")
@@ -1548,6 +1626,13 @@ def load_game():
            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
            house()
 
+def generate_achievements():
+    with open("Achievements.txt","w") as a_file:
+        if not achievements.a_list:
+            a_file.write("No Achivements")
+        else:
+            for item in achievements.a_list:
+                a_file.write("%s\n" % item)
    
 def opening_game():
    os.system("cls")
@@ -1618,7 +1703,8 @@ _______\|/__________\\;_\\//___\|/________"""+color.END)
       print(color.PURPLE + "Options:" + color.END)
       print(color.PURPLE + "[1] " + color.END + "New Game")
       print(color.PURPLE + "[2] " + color.END + "Load Game")
-      print(color.PURPLE + "[3] " + color.END + "Exit")
+      print(color.PURPLE + "[3] " + color.END + "View Achievements")
+      print(color.PURPLE + "[4] " + color.END + "Exit")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "new game":
          choice = True
@@ -1626,12 +1712,27 @@ _______\|/__________\\;_\\//___\|/________"""+color.END)
       elif option == "2" or option == "load game":
          choice = True
          load_game()
-      elif option == "3" or option == "exit":
+      elif option == "4" or option == "exit":
          print(color.PURPLE + "Entering reality...." + color.END)
          choice = True
          sys.exit()
+      elif option == "3" or option == "view achievements":
+          view_achievements()
       else:
          print("That is not an acceptable answer.")
+
+def view_achievements():
+    with open("Achievements.txt","r") as file:
+        if not file.read(1):
+            print("No achievements yet!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            start_game()
+        else:
+            aa = file.readlines()
+            for line in aa:
+                print(" " + line)
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            start_game()
 
 def main():
    start_game()
