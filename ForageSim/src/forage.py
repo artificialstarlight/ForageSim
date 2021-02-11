@@ -3,8 +3,8 @@
 
 
 
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    os.chdir(sys._MEIPASS)
+"""if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)"""
 
     
 import sys
@@ -1358,7 +1358,7 @@ def set_prices():
     
 def townsfolk_rand_encounter():
    global offered_disks
-   global encounter
+   #global encounter
    global randitem
    rand_enc = random.randint(0,100)
    randitem = random.choice(items.askables)
@@ -1470,7 +1470,10 @@ def burn_stake():
 def true_ending2():
     os.system("cls")
     pygame.mixer.init()
-    pygame.mixer.music.load('theme.wav')
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    rel_path = "game-data\theme.wav"
+    path = os.path.join(curpath, rel_path)
+    pygame.mixer.music.load(path)
     pygame.mixer.music.play(3)
     print(color.RED + "YOU HAVE GREATLY OFFENDED US, THE FOREST SPIRITS." + color.END)
     print(color.RED + "NO LONGER SHALL YOU LIVE HERE IN OUR FOREST." + color.END)
@@ -1516,7 +1519,10 @@ def true_ending2():
 def true_ending():
     os.system("cls")
     pygame.mixer.init()
-    pygame.mixer.music.load('theme.wav')
+    curpath = os.path.dirname(os.path.abspath(__file__))
+    rel_path = "game-data\theme.wav"
+    path = os.path.join(curpath, rel_path)
+    pygame.mixer.music.load(path)
     pygame.mixer.music.play(3)
     print(r"""
 
@@ -1588,7 +1594,12 @@ def end_game():
    start_game()
 
 def save_game():
+   curpath = os.path.dirname(os.path.abspath(__file__))
+   rel_path = "game-data"
+   target = "Save File"
+   path = os.path.join(curpath, rel_path,target)
    os.system("cls")
+   print(path)
    choice = False
    while choice == False:
       print("Would you like to save the game?")
@@ -1600,11 +1611,19 @@ def save_game():
          Player_Save = player
          Cat_Save = C
          Data_Save = [Player_Save, Cat_Save]
-         with open("Save File","wb") as file:
-            pickle.dump(Data_Save,file)
-         print("Game Saved!")
-         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-         house()
+         try:
+             with open(path,"wb") as file:
+                pickle.dump(Data_Save,file)
+             print("Game Saved!")
+             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+             house()
+         except IOError:
+            print("This is weird. A save file could not be found or created.")
+            print("If you're seeing this message, perhaps contact the dev.")
+            print("In the meantime, you can still play the game..")
+            print("You just can't save until this gets fixed!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            house()
       elif option == "2" or option == "no":
          print("Alright...")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -1615,8 +1634,12 @@ def save_game():
 def load_game():
    global player
    global C
+   curpath = os.path.dirname(os.path.abspath(__file__))
+   rel_path = "game-data"
+   target = "Save File"
+   path = os.path.join(curpath, rel_path,target)
    try:
-       with open("Save File","rb") as file:
+       with open(path,"rb") as file:
            savedata = pickle.load(file)
            player = savedata[0]
            C = savedata[1]
@@ -1627,17 +1650,22 @@ def load_game():
        sys.exit()
 
 def generate_achievements():
-    with open("Achievements.txt","w") as a_file:
-        if not achievements.a_list:
-            a_file.write("No Achivements")
-        else:
-            for item in achievements.a_list:
-                a_file.write("%s\n" % item)
+   curpath = os.path.dirname(os.path.abspath(__file__))
+   rel_path = "game-data"
+   target = "Achievements.txt"
+   path = os.path.join(curpath, rel_path,target)
+   with open(path,"w") as a_file:
+       if not achievements.a_list:
+           a_file.write("No Achievements")
+       else:
+           for item in achievements.a_list:
+               a_file.write("%s\n" % item)
    
 def opening_game():
    os.system("cls")
    global player
    global C
+   global encounter
    set_prices()
    """print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
    print(color.PURPLE + "A game where you live on the edge of a forest." + color.END)
@@ -1675,12 +1703,17 @@ def opening_game():
    os.system("cls")
    player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False)
    C = cat("",2,5)
+   encounter = False
    house()
 
 def start_game():
    os.system("cls")
    pygame.mixer.init()
-   pygame.mixer.music.load('theme.wav')
+   curpath = os.path.dirname(os.path.abspath(__file__))
+   rel_path = "game-data"
+   target = "theme.wav"
+   path = os.path.join(curpath, rel_path, target)
+   pygame.mixer.music.load(path)
    pygame.mixer.music.play(3)
    print(color.GREEN+r"""
    ________
