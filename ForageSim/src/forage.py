@@ -1599,7 +1599,6 @@ def save_game():
    target = "Save File"
    path = os.path.join(curpath, rel_path,target)
    os.system("cls")
-   print(path)
    choice = False
    while choice == False:
       print("Would you like to save the game?")
@@ -1655,17 +1654,17 @@ def generate_achievements():
    target = "Achievements.txt"
    path = os.path.join(curpath, rel_path,target)
    with open(path,"w") as a_file:
-       if not achievements.a_list:
-           a_file.write("No Achievements")
-       else:
-           for item in achievements.a_list:
-               a_file.write("%s\n" % item)
+      for item in achievements.a_list:
+         a_file.write("%s\n" % item)
    
 def opening_game():
    os.system("cls")
    global player
    global C
    global encounter
+   achievements.a_list.clear()
+   achievements.add_achievement("      ")
+   generate_achievements()
    set_prices()
    """print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
    print(color.PURPLE + "A game where you live on the edge of a forest." + color.END)
