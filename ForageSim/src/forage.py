@@ -1127,7 +1127,7 @@ def town():
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          town()
       elif option == "4" or option == "run errand":
-         if encounter == False:
+         if player.encounter == False:
             print("You have no errands to run today.")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             town()
