@@ -480,7 +480,10 @@ def house():
              yn = str(input(">>> ")).lower()
              if yn == "1" or yn == "yes":
                  print("You lie down...")
-                 player.health = player.health + 5
+                 if player.health + 5 <= 20:
+                    player.health = player.health + 5
+                 elif player.health + 1 <= 20:
+                    player.health = player.health + 1
                  choice = True
                  next_day()
           else:
@@ -1458,7 +1461,7 @@ def townsfolk_rand_encounter():
    """for c,i in enumerate(items.askables):
       if i == randitem:
          materials = items.craftlist[c]"""
-   if rand_enc <= 40:
+   if rand_enc <= 50:
       player.encounter = True
       os.system("cls")
       print(color.BOLD + "*KNOCK KNOCK*" + color.END)
