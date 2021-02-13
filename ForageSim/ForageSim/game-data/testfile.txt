@@ -1,3 +1,0 @@
-This is here so github won't say the file is empty
-when I try to upload my game-data folder. If you're reading
-this and you already have the game, feel free to delete this.
