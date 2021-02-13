@@ -752,7 +752,7 @@ def kitty():
          C.disp_stats()
          print("")
          print("Remember, you must take care of your cat!")
-         print("You wouldn't want " + cat.name + " to run away!")
+         print("You wouldn't want " + C.name + " to run away!")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          kitty()
       elif option == "4" or option == "rename":
