@@ -18,5 +18,9 @@ This game is currently being TESTED. Please report any bugs to alexneely8@gmail.
 
 6. Run foragesim.exe
 
+# It won't run!
+Your antivirus may have flagged it as a false positive, as it may do with applications compiled with PyInstaller.
+
+Try and configure your antivirus settings so it will allow the file. 
 
 
