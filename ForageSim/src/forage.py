@@ -757,7 +757,7 @@ def kitty():
          kitty()
       elif option == "4" or option == "rename":
          print("New name?")
-         cat.name = str(input(">>> "))
+         C.name = str(input(">>> "))
          print("Ok!")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          kitty()
@@ -1022,7 +1022,7 @@ def cat_chance_encounter(place):
                      print("The kitty will follow you home!")
                      player.hascat = True
                      print("Name the kitty:")
-                     cat.name = str(input(">>> "))
+                     C.name = str(input(">>> "))
                      print("Ok!")
                      print("You can now find FISH at the creek!")
                      print("You can now buy CAT FOOD at the marketplace!")
@@ -1789,7 +1789,7 @@ def opening_game():
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
    os.system("cls")
    player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False,False,"regular")
-   C = cat("",2,5)
+   C = cat(" ",2,5)
    house()
 
 def start_game():
