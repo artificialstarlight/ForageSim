@@ -393,7 +393,7 @@ class items:
     ["beeswax","beeswax","beeswax","string"], #candle
     ["cedar resin","dragon's blood resin",    #strong incense
                       "dragon's blood resin"],
-    ["acorns","acorns","clovers","clovers","dandelion","cloth"], #luck charm
+    ["acorns","acorns","clovers","clovers","dandelion"], #luck charm
     ["rosemary","rosemary","cloth","string","green sage", #protection amulet
                          "salt"],
     ["blackberries","blackberries","raspberries","raspberries"], #berry juice
@@ -428,7 +428,7 @@ def house():
                                  """)
        elif player.housetype == "mushroom":
           print(r"""
-                       .
+                       
         ('
         '|
         |'
@@ -712,7 +712,7 @@ def kitty():
          _    /   ,    \/\_
         ((____|    )_-\ \_-`
          `-----'`-----` `--`""")
-      print(30 * "-" , cat.name , 30 * "-")
+      print(30 * "-" , C.name , 30 * "-")
       print(color.PURPLE + "[1]" + color.END + "Pet")
       print(color.PURPLE + "[2]" + color.END + "Feed")
       print(color.PURPLE + "[3]" + color.END + "Stats")
@@ -722,11 +722,11 @@ def kitty():
           print(color.PURPLE + "[6]" + color.END + "Play")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "pet":
-         print("You pet " + cat.name + "!")
+         print("You pet " + C.name + "!")
          print(color.PINK + "Purrr..." + color.END)
          if C.affection + 2 <= 20:
             C.affection = C.affection + 2
-            print(cat.name + " is more affectionate towards you!")
+            print(C.name + " is more affectionate towards you!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             kitty()
       elif option == "2" or option == "feed":
@@ -743,7 +743,7 @@ def kitty():
             if foodname in foods:
                 player.storage.remove(foodname)
                 C.hunger = C.hunger - 4
-                print("Fed " + cat.name + "!")
+                print("Fed " + C.name + "!")
             else:
                 print("Not a valid food!")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -767,9 +767,9 @@ def kitty():
          house()
       elif option == "6" or option == "play":
           player.storage.remove("cat toy")
-          print("You gave " + cat.name + " a toy!")
+          print("You gave " + C.name + " a toy!")
           C.hastoy = True
-          print(cat.name + " won't require affection as much")
+          print(C.name + " won't require affection as much")
           print("until the toy wears out.")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
           kitty()   
@@ -839,11 +839,13 @@ def create():
              player.reputation = player.reputation - 2
              achievements.add_achievement("Spiritual: Created an altar!")
              print(color.PURPLE + "The ALTAR was now added to your house!" + color.END)
-         if itemname == "mushroom house":
+         if itemname == "mushroom house" and player.housetype == "regular":
             player.storage.remove(itemname)
             player.housetype = "mushroom"
             print(color.PURPLE + "You now have a MUSHROOM house!" + color.END)
             achievements.add_achievement("Mushroom Living: Created a mushroom house!")
+         if itemname == "mushroom house" and player.housetype == "mushroom":
+            print("You already have a mushroom house!")
       elif choice == "2" or choice == "no":
          valid = True
          create()
