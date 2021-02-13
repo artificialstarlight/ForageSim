@@ -39,12 +39,13 @@ class achievements:
         achievements.a_list = list(dict.fromkeys(achievements.a_list))
         
 class cat:
-   def __init__(self,name,hunger,affection):
+   def __init__(self,name,hunger,affection,hastoy,toywear,hasitem):
       self.name = ""
       self.hunger = 0 #min 0 (not hungry), max 20 (very hungry)
-      self.affection = 20 #min 0 max 10
+      self.affection = 20 #min 0 max 20
       self.hastoy = False
       self.toywear = 10 #10 good, 0 broken
+      self.hasitem = False
    def disp_stats(self):
       if self.hastoy == False:
           hastoystr = "No"
@@ -57,7 +58,7 @@ class cat:
       self.affection = 20
 
 class Player:
-    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,spirit_reputation,townsfolk_helped,cansleep,hascat,hasaltar,immune,recipes,spirit_immune,encounter,housetype):
+    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,spirit_reputation,townsfolk_helped,cansleep,hascat,hasaltar,immune,recipes,spirit_immune,encounter,housetype,numkilled):
        self.health = 20
        self.max_health = 20
        self.storage = []
@@ -78,6 +79,7 @@ class Player:
        self.spirit_immune = False
        self.encounter = False
        self.housetype = "regular"
+       self.numkilled = 0
     def disp_stats(self):
        hhmm = '{:02d}:{:02d}'.format(*divmod(player.time, 60))
        print("Health: " + str(player.health) + "/20"," Disks: " + str(player.disks)," Day: " + str(player.day)," Time: " + str(hhmm))
@@ -345,7 +347,7 @@ class items:
                       "candle","strong incense","luck charm",
                       "protection amulet","berry juice","berry pie",
                       "bitter tea","mild poison","mushroom soup","wreath","altar",
-                     "large basket","cat toy","mushroom house"]
+                     "large basket","cat toy","mushroom house","flying ointment"]
    askables = ["love potion","curse talisman","money charm",
                       "health potion","sweet tea","deadly poison",
                       "vegetable soup","bread loaf","sweet perfume",
@@ -405,7 +407,8 @@ class items:
     ["animal bone","animal bone","snake shed","stick","stick","pebbles","candle"], #altar
     ["stick","stick","stick","stick","stick","stick","string","cloth","oak bark"],#large basket
     ["stick","string","string","pebbles"],#cat toy
-    ["fly agaric","fly agaric","fly agaric","fly agaric","laetiporus","morel","oak bark","oak bark"] #mushroom house
+    ["fly agaric","fly agaric","fly agaric","fly agaric","laetiporus","morel","oak bark","oak bark"], #mushroom house
+    ["fly agaric","fly agaric","fly agaric","beeswax","pine needles","pine needles"] # flying ointment
       
     ]
 
@@ -414,6 +417,12 @@ def house():
     os.system("cls")
     choice = False
     yn = ""
+    if player.hascat == True:
+       rand_find_item = random.randint(0,100)
+       if rand_find_item <= 10:
+          C.hasitem = True
+       else:
+          C.hasitem = False
     while choice == False:
        if player.housetype == "regular":
           print(r"""
@@ -695,12 +704,89 @@ def use_item():
                   print("Good. It's probably for the best you don't do that.")
                else:
                   print("Not a valid answer.")
+           elif useditem == "flying ointment":
+              print("Used flying ointment!")
+              achievements.add_achievement("Witch Flight: Created and used flying ointment!")
+              player.storage.remove(useditem)
+              fly()
            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
            use_item()
                     
                          
-        
-                
+def fly():
+   os.system("cls")
+   print(color.PURPLE + "And I shall go into a hare.." + color.END)
+   print(color.PURPLE + "With sorrow and sych and meickle care.." + color.END)
+   print(color.PURPLE + "And I shall go in the Spirit's name.." + color.END)
+   print(color.PURPLE + "Ay while I come home again." + color.END)
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   os.system("cls")
+   choice = False
+   while choice == False:
+      print(r"""
+                ,\
+                \\\,_
+                 \` ,\
+            __,.-" =__)
+          ."        )
+       ,_/   ,    \/\_
+       \_|    )_-\ \_-`
+          `-----` `--`
+               """)
+      print("")
+      print(30 * "-" , "Hare" , 30 * "-")
+      print(color.PURPLE + "[1]" + color.END + "Kill Townsperson")
+      print(color.PURPLE + "[2]" + color.END + "Help Townsperson")
+      print(color.PURPLE + "[3]" + color.END + "Go Back")
+      print(72 * "-")
+      option = input(color.PURPLE + ">>> " + color.END).lower()
+      if option == "1" or option == "kill townsperson":
+         choice = True
+         kill()
+      elif option == "2" or option == "help townsperson":
+         choice = True
+         help_town()
+      elif option == "3" or option == "go back":
+         choice = True
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         house()
+      else:
+         print("Not an acceptable answer.")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         fly()
+
+def kill():
+   os.system("cls")
+   player.numkilled = player.numkilled + 1
+   if player.numkilled < 10:
+      print("You kill a townsperson. There are " + str(10 - player.numkilled) + " left.")
+      achievements.add_achievement("Murderer: Killed a townsperson!")
+      pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+      house()
+   elif player.numkilled >= 10:
+      print("You killed all the townspeople...")
+      pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+      murder_ending()
+
+def help_town():
+   print("You help the townspeople!")
+   player.reputation = player.reputation + 1
+   player.spirit_reputation = player.spirit_reputation - 1
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   if player.spirit_reputation <= 3:
+      print(color.RED + "The forest spirits are angry..."+ color.END)
+   if player.spirit_reputation <= 0:
+      true_ending2()
+   if player.reputation <=3:
+      print(color.RED + "The townspeople are angry..."+ color.END)
+   if player.reputation <= 0:
+      os.system("cls")
+      pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+      burn_stake()
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   house()
+   
+   
         
 def kitty():
    os.system("cls")
@@ -723,6 +809,8 @@ def kitty():
       print(color.PURPLE + "[5]" + color.END + "Go Back")
       if "cat toy" in player.storage:
           print(color.PURPLE + "[6]" + color.END + "Play")
+      if C.hasitem == True:
+         print(color.PURPLE + "[7]" + color.END + "Present")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "pet":
          print("You pet " + C.name + "!")
@@ -768,14 +856,23 @@ def kitty():
          choice = True
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          house()
-      elif option == "6" or option == "play":
+      elif (option == "6" or option == "play") and "cat toy" in player.storage:
           player.storage.remove("cat toy")
           print("You gave " + C.name + " a toy!")
           C.hastoy = True
           print(C.name + " won't require affection as much")
           print("until the toy wears out.")
           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-          kitty()   
+          kitty()
+      elif (option == "7" or option == "present") and C.hasitem == True:
+         randitem = random.choice(items.buyables)
+         print("Look! " + C.name + " has brought you a present!")
+         print("You got a " + str(randitem) + "!")
+         print("Added to storage.")
+         player.storage.append(randitem)
+         C.hasitem = False
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         kitty()
       else:
          print("Not an acceptable answer.")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
@@ -1663,6 +1760,50 @@ def true_ending():
     pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
     start_game()
 
+
+def murder_ending():
+   os.system("cls")
+   pygame.mixer.init()
+   curpath = os.path.dirname(os.path.abspath(__file__))
+   rel_path = "game-data"
+   target = "theme.wav"
+   path = os.path.join(curpath, rel_path,target)
+   pygame.mixer.music.load(path)
+   pygame.mixer.music.play(3)
+   print(r"""
+
+         .AMMMMMMMMMMA.          
+       .AV. :::.:.:.::MA.        
+      A' :..        : .:`A       
+     A'..              . `A.     
+    A' :.    :::::::::  : :`A    
+    M  .    :::.:.:.:::  . .M    
+    M  :   ::.:.....::.:   .M    
+    V : :.::.:........:.:  :V    
+   A  A:    ..:...:...:.   A A   
+  .V  MA:.....:M.::.::. .:AM.M   
+ A'  .VMMMMMMMMM:.:AMMMMMMMV: A  
+:M .  .`VMMMMMMV.:A `VMMMMV .:M: 
+ V.:.  ..`VMMMV.:AM..`VMV' .: V  
+  V.  .:. .....:AMMA. . .:. .V   
+   VMM...: ...:.MMMM.: .: MMV    
+       `VM: . ..M.:M..:::M'      
+         `M::. .:.... .::M       
+          M:.  :. .... ..M       
+          V:  M:. M. :M .V       
+          `V.:M.. M. :M.V'
+                         """)
+   print(color.RED + "FOOLISH WITCH." + color.END)
+   print(color.RED + "DON'T YOU KNOW..." + color.END)
+   print(color.RED + "THE DEAD ARE SPIRITS TOO?" + color.END)
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   print(color.RED + "YOU WILL NOT JOIN US WHEN YOU DIE." + color.END)
+   print(color.RED + "YOU WILL BURN..." + color.END)
+   pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+   pygame.mixer.music.stop()
+   achievements.add_achievement("Karma: Got what you deserved!")
+   game_over("Karma getting you. You killed the whole town!")
+
 def game_over(death):
     os.system("cls")
     print(color.BOLD + "You died...." + color.END)
@@ -1792,8 +1933,8 @@ def opening_game():
    print(color.PURPLE + "Enjoy your new house!" + color.END)
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
    os.system("cls")
-   player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False,False,"regular")
-   C = cat(" ",2,5)
+   player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False,False,"regular",0)
+   C = cat(" ",2,10,False,10,False)
    house()
 
 def start_game():
