@@ -394,7 +394,7 @@ class items:
     ["cedar resin","dragon's blood resin",    #strong incense
                       "dragon's blood resin"],
     ["acorns","acorns","clovers","clovers","dandelion"], #luck charm
-    ["rosemary","rosemary","cloth","string","green sage", #protection amulet
+    ["rosemary","rosemary","string","green sage", #protection amulet
                          "salt"],
     ["blackberries","blackberries","raspberries","raspberries"], #berry juice
     ["flour","berry juice","berry juice","sugar","salt"], #berry pie
@@ -1564,8 +1564,9 @@ def true_ending2():
     os.system("cls")
     pygame.mixer.init()
     curpath = os.path.dirname(os.path.abspath(__file__))
-    rel_path = "game-data\theme.wav"
-    path = os.path.join(curpath, rel_path)
+    rel_path = "game-data"
+    target = "theme.wav"
+    path = os.path.join(curpath, rel_path,target)
     pygame.mixer.music.load(path)
     pygame.mixer.music.play(3)
     print(color.RED + "YOU HAVE GREATLY OFFENDED US, THE FOREST SPIRITS." + color.END)
@@ -1613,8 +1614,9 @@ def true_ending():
     os.system("cls")
     pygame.mixer.init()
     curpath = os.path.dirname(os.path.abspath(__file__))
-    rel_path = "game-data\theme.wav"
-    path = os.path.join(curpath, rel_path)
+    rel_path = "game-data"
+    target = "theme.wav"
+    path = os.path.join(curpath, rel_path,target)
     pygame.mixer.music.load(path)
     pygame.mixer.music.play(3)
     print(r"""
