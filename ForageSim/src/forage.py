@@ -416,7 +416,7 @@ def house():
     yn = ""
     while choice == False:
        if player.housetype == "regular":
-          print("""
+          print(r"""
                    (                                 
            ________[]_                             
           /^=^-^-^=^-^\                   
@@ -427,7 +427,7 @@ def house():
        &&|__|__|_______|&&
                                  """)
        elif player.housetype == "mushroom":
-          print("""
+          print(r"""
                        .
         ('
         '|
