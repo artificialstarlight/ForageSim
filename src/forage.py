@@ -1133,7 +1133,6 @@ def town():
             print("You have no errands to run today.")
             pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
             town()
-
          else:
             choice = True
             errand()
@@ -1460,7 +1459,7 @@ def townsfolk_rand_encounter():
       if i == randitem:
          materials = items.craftlist[c]"""
    if rand_enc <= 40:
-      encounter = True
+      player.encounter = True
       os.system("cls")
       print(color.BOLD + "*KNOCK KNOCK*" + color.END)
       print("...")
