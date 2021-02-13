@@ -1,10 +1,5 @@
 #TODO: Make more items usable
-
-
-
-
-"""if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    os.chdir(sys._MEIPASS)"""
+#TODO: make spirits give you tasks like the townsfolk do
 
     
 import sys
@@ -431,7 +426,7 @@ def house():
        ^^|  |LI|  [}{] |^^^^
        &&|__|__|_______|&&
                                  """)
-       elif housetype == "mushroom":
+       elif player.housetype == "mushroom":
           print("""
                        .
         ('
@@ -485,8 +480,7 @@ def house():
              yn = str(input(">>> ")).lower()
              if yn == "1" or yn == "yes":
                  print("You lie down...")
-                 while player.health < 20:
-                    player.health = player.health + 1
+                 player.health = player.health + 5
                  choice = True
                  next_day()
           else:
@@ -1179,7 +1173,7 @@ def builder():
          print("Not a valid answer")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          builder()
-   if player.housetype == "mushroom":
+   elif player.housetype == "mushroom":
       print("I've noticed you're living in a mushroom.")
       print("For 20 Disks, I can build your REGULAR house back again!")
       if yn == "1" or yn == "yes":
@@ -1201,8 +1195,11 @@ def builder():
          print("Not a valid answer")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          builder()
-            
-
+   else:
+      print("I don't have anything for you at the moment.")
+      pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+      town()
+      
 def fortune_teller():
     os.system("cls")
     recipe_chance = random.randint(0,100)
@@ -1764,15 +1761,6 @@ def opening_game():
    achievements.add_achievement("      ")
    generate_achievements()
    set_prices()
-   """print(color.PURPLE + "Welcome to FORAGING SIMULATOR." + color.END)
-   print(color.PURPLE + "A game where you live on the edge of a forest." + color.END)
-   print(color.PURPLE + "Some call you wise, others call you a witch." + color.END)
-   print(color.PURPLE + "But really, your passion is FORAGING items, as well as CRAFTING new ones." + color.END)
-   print(color.PURPLE + "You can help people, or hurt them, the choice will be yours." + color.END)
-   print(color.PURPLE + "But in the end, the fate of the small town is in your hands." + color.END)
-   print("")
-   print(color.PURPLE + "You have TWENTY DAYS." + color.END)
-   print(color.PURPLE + "Good luck." + color.END)"""
    print("")
    print("")
    print("-------------------------------------------------------------------------------")
