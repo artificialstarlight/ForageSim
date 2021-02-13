@@ -62,7 +62,7 @@ class cat:
       self.affection = 20
 
 class Player:
-    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,spirit_reputation,townsfolk_helped,cansleep,hascat,hasaltar,immune,recipes,spirit_immune):
+    def __init__(self,health,storage,basket,basketsize,disks,day,time,reputation,spirit_reputation,townsfolk_helped,cansleep,hascat,hasaltar,immune,recipes,spirit_immune,encounter,housetype):
        self.health = 20
        self.max_health = 20
        self.storage = []
@@ -81,6 +81,8 @@ class Player:
        self.immune = False
        self.recipes = []
        self.spirit_immune = False
+       self.encounter = False
+       self.housetype = "regular"
     def disp_stats(self):
        hhmm = '{:02d}:{:02d}'.format(*divmod(player.time, 60))
        print("Health: " + str(player.health) + "/20"," Disks: " + str(player.disks)," Day: " + str(player.day)," Time: " + str(hhmm))
@@ -348,7 +350,7 @@ class items:
                       "candle","strong incense","luck charm",
                       "protection amulet","berry juice","berry pie",
                       "bitter tea","mild poison","mushroom soup","wreath","altar",
-                     "large basket","cat toy"]
+                     "large basket","cat toy","mushroom house"]
    askables = ["love potion","curse talisman","money charm",
                       "health potion","sweet tea","deadly poison",
                       "vegetable soup","bread loaf","sweet perfume",
@@ -356,7 +358,8 @@ class items:
                       "protection amulet","berry juice","berry pie",
                       "bitter tea","mild poison","mushroom soup","wreath"]
    offerables = ["bread loaf","strong incense","berry pie","berry juice",
-                 "sweet perfume","vegetable soup","mushroom soup","raspberries","blackberries","rose petals"]
+                 "sweet perfume","vegetable soup","mushroom soup","raspberries","blackberries","rose petals",
+                 "belladonna berries","animal bone"]
    useables = ["health potion","money charm", "mild poison","deadly poison"]
 
    cat_items = ["fish","cat food","cat toy"]
@@ -406,7 +409,8 @@ class items:
     ["stick","stick","stick","violets","violets"], #wreath
     ["animal bone","animal bone","snake shed","stick","stick","pebbles","candle"], #altar
     ["stick","stick","stick","stick","stick","stick","string","cloth","oak bark"],#large basket
-    ["stick","string","string","pebbles"] #cat toy
+    ["stick","string","string","pebbles"],#cat toy
+    ["fly agaric","fly agaric","fly agaric","fly agaric","laetiporus","morel","oak bark","oak bark"] #mushroom house
       
     ]
 
@@ -416,16 +420,45 @@ def house():
     choice = False
     yn = ""
     while choice == False:
-       print("""
-                (                                 
-        ________[]_                             
-       /^=^-^-^=^-^\                   
-      /^-^-^-^-^-^-^\               
-     /__^_^_^_^^_^_^_\              
-      |  .==.       |     
-    ^^|  |LI|  [}{] |^^^^
-    &&|__|__|_______|&&
-                              """)
+       if player.housetype == "regular":
+          print("""
+                   (                                 
+           ________[]_                             
+          /^=^-^-^=^-^\                   
+         /^-^-^-^-^-^-^\               
+        /__^_^_^_^^_^_^_\              
+         |  .==.       |     
+       ^^|  |LI|  [}{] |^^^^
+       &&|__|__|_______|&&
+                                 """)
+       elif housetype == "mushroom":
+          print("""
+                       .
+        ('
+        '|
+        |'
+       [::]
+       [::]   _......_
+       [::].-'      _.-`.
+       [:.'    .-. '-._.-`.
+       [/ /\   |  \        `-..
+       / / |   `-.'      .-.   `-.
+      /  `-'            (   `.    `.
+     |           /\      `-._/      \
+     '    .'\   /  `.           _.-'|
+    /    /  /   \_.-'        _.':;:/
+  .'     \_/             _.-':;_.-'
+ /   .-.             _.-' \;.-'
+/   (   \       _..-'     |
+\    `._/  _..-'    .--.  |
+ `-.....-'/  _ _  .'    '.|
+          | |_|_| |      | \  (o)
+     (o)  | |_|_| |      | | (\'/)
+    (\'/)/  ''''' |     o|  \;:;
+     :;  |        |      |  |/)
+      ;: `-.._    /__..--'\.' ;:
+          :;  `--' :;   :;
+          """)
 
        print(30 * "-" , "Your House" , 30 * "-")
        print(color.PURPLE + "[1]" + color.END + "Go Outside")
@@ -812,6 +845,11 @@ def create():
              player.reputation = player.reputation - 2
              achievements.add_achievement("Spiritual: Created an altar!")
              print(color.PURPLE + "The ALTAR was now added to your house!" + color.END)
+         if itemname == "mushroom house":
+            player.storage.remove(itemname)
+            player.housetype = "mushroom"
+            print(color.PURPLE + "You now have a MUSHROOM house!" + color.END)
+            achievements.add_achievement("Mushroom Living: Created a mushroom house!")
       elif choice == "2" or choice == "no":
          valid = True
          create()
@@ -1080,6 +1118,8 @@ def town():
       print(color.PURPLE + "[3]" + color.END + "Info")
       print(color.PURPLE + "[4]" + color.END + "Run Errand")
       print(color.PURPLE + "[5]" + color.END + "Fortune-Teller")
+      if player.day % 2 == 0:
+         print(color.PURPLE + "[6]" + color.END + "Builder")
       option = input(color.PURPLE + ">>> " + color.END).lower()
       if option == "1" or option == "marketplace":
          choice = True
@@ -1103,10 +1143,65 @@ def town():
             errand()
       elif option == "5" or option == "fortune teller":
           fortune_teller()
+      elif (option == "6" or option == "builder") and player.day % 2 == 0:
+         builder()
       else:
          print("That is not an acceptable answer.")
          pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
          town()
+
+def builder():
+   os.system("cls")
+   print("Hello! I'm the builder!")
+   if "mushroom house" not in player.recipes:
+      print("I got something real neat here.")
+      print("I'll offer you a special recipe..for 20 Disks!")
+      print("What do you say?")
+      print(color.PURPLE + "[1]" + color.END + "Yes")
+      print(color.PURPLE + "[2]" + color.END + "No")
+      yn = input(color.PURPLE + ">>> " + color.END).lower()
+      if yn == "1" or yn == "yes":
+         if player.disks >= 20:
+            print("Great, thanks! I've added it to your RECIPE BOOK!")
+            player.recipes.append("mushroom house")
+            player.disks = player.disks - 20
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            town()
+         elif player.disks < 20:
+            print("Not enough disks!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            town()
+      elif yn == "2" or yn == "no":
+         print("Ok then!")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         town()
+      else:
+         print("Not a valid answer")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         builder()
+   if player.housetype == "mushroom":
+      print("I've noticed you're living in a mushroom.")
+      print("For 20 Disks, I can build your REGULAR house back again!")
+      if yn == "1" or yn == "yes":
+         if player.disks >= 20:
+            print("Great, thanks!")
+            player.disks = player.disks - 20
+            player.housetype = "regular"
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            town()
+         elif player.disks < 20:
+            print("Not enough disks!")
+            pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+            town()
+      elif yn == "2" or yn == "no":
+         print("Ok then!")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         town()
+      else:
+         print("Not a valid answer")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         builder()
+            
 
 def fortune_teller():
     os.system("cls")
@@ -1318,7 +1413,7 @@ def next_day():
               C.hastoy = False
    if player.hasaltar == True:
        player.spirit_reputation = player.spirit_reputation - 1
-   if player.day == 30:
+   if player.day == 20:
       end_game()
    player.time = 420
    if player.passed_out == True:
@@ -1358,7 +1453,6 @@ def set_prices():
     
 def townsfolk_rand_encounter():
    global offered_disks
-   #global encounter
    global randitem
    rand_enc = random.randint(0,100)
    randitem = random.choice(items.askables)
@@ -1394,7 +1488,7 @@ def townsfolk_rand_encounter():
       pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
       house()
    else:
-      encounter = False
+      player.encounter = False
       house()
 
 def errand():
@@ -1418,7 +1512,7 @@ def errand():
             player.basket.remove(randitem)
             print(color.CYAN + "Thanks! Here's your " + str(offered_disks) + " Disks!" + color.END)
             player.disks = player.disks = offered_disks
-            encounter = False
+            player.encounter = False
             valid = True
             player.townsfolk_helped = player.townsfolk_helped + 1
             achievements.add_achievement("Helper: Helped a townsperson!")
@@ -1638,14 +1732,19 @@ def load_game():
    target = "Save File"
    path = os.path.join(curpath, rel_path,target)
    try:
-       with open(path,"rb") as file:
-           savedata = pickle.load(file)
-           player = savedata[0]
-           C = savedata[1]
-           pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
-           house()
+      if os.path.getsize(path) > 0:
+          with open(path,"rb") as file:
+              savedata = pickle.load(file)
+              player = savedata[0]
+              C = savedata[1]
+              pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+              house()
+      else:
+         print("There is nothing to load. Exiting...")
+         pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
+         start_game()
    except IOError:
-       print("There is nothing to load. Exiting...")
+       print("Your Save File was either moved or deleted, and could not be found!")
        sys.exit()
 
 def generate_achievements():
@@ -1661,7 +1760,6 @@ def opening_game():
    os.system("cls")
    global player
    global C
-   global encounter
    achievements.a_list.clear()
    achievements.add_achievement("      ")
    generate_achievements()
@@ -1673,7 +1771,7 @@ def opening_game():
    print(color.PURPLE + "You can help people, or hurt them, the choice will be yours." + color.END)
    print(color.PURPLE + "But in the end, the fate of the small town is in your hands." + color.END)
    print("")
-   print(color.PURPLE + "You have ONE MONTH." + color.END)
+   print(color.PURPLE + "You have TWENTY DAYS." + color.END)
    print(color.PURPLE + "Good luck." + color.END)"""
    print("")
    print("")
@@ -1700,9 +1798,8 @@ def opening_game():
    print(color.PURPLE + "Enjoy your new house!" + color.END)
    pressenter = input(color.BLUE + "(PRESS ANY KEY TO CONTINUE)" + color.END)
    os.system("cls")
-   player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False)
+   player = Player(20,[],[],8,10,1,420,6,6,0,False,False,False,False,[],False,False,"regular")
    C = cat("",2,5)
-   encounter = False
    house()
 
 def start_game():
